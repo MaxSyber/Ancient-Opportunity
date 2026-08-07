@@ -24,7 +24,7 @@ Every importer should convert its source data into this shape before the listing
   },
   workplace: "Remote | Hybrid | On-site | Field-based | Unknown",
   employmentType: "Full-time | Part-time | Contract | Seasonal | Internship | Unknown",
-  experienceLevel: "Entry | Mid | Senior | Unknown",
+  jobTitles: ["Archaeological Field Technician", "GIS Specialist"],
   compensation: {
     display: "Human-readable pay range",
     minAmount: 0,
@@ -42,6 +42,7 @@ Every importer should convert its source data into this shape before the listing
   tags: ["CRM", "Federal", "GIS"],
   description: {
     summary: "Short app-owned summary or permitted source excerpt",
+    html: "Optional sanitized rich-text HTML for directly submitted listings",
     attribution: "Where/how the listing came from"
   },
   urls: {
