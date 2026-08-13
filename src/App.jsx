@@ -1,24 +1,61 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Bookmark, Moon, Sun } from "lucide-react";
 import JobsTab from "./components/JobsTab";
 import FieldSchoolsTab from "./components/FieldSchoolsTab";
 import ConferencesTab from "./components/ConferencesTab";
 import InfluencersTab from "./components/InfluencersTab";
 import FieldEquipmentStoresTab from "./components/FieldEquipmentStoresTab";
-import { jobs } from "./data/jobs";
+import { normalizeJobRow } from "./data/jobs";
+import { supabase } from "./supabaseClient";
 
 const tabs = ["Jobs", "Field Schools", "Conferences", "Social Media Influencers", "Field Equipment Stores"];
 
 export default function App() {
-  const [jobListings, setJobListings] = useState(jobs);
+  const [jobListings, setJobListings] = useState([]);
+  const [jobsLoading, setJobsLoading] = useState(true);
+  const [jobsError, setJobsError] = useState("");
   const [query, setQuery] = useState("");
   const [datePosted, setDatePosted] = useState("Any date");
   const [selectedJobTitles, setSelectedJobTitles] = useState([]);
   const [type, setType] = useState("Any type");
   const [darkMode, setDarkMode] = useState(false);
   const [activeTab, setActiveTab] = useState("Jobs");
-  const [selectedId, setSelectedId] = useState(jobs[0].id);
-  const [savedIds, setSavedIds] = useState(() => new Set(jobs.filter((job) => job.savedByDefault).map((job) => job.id)));
+  const [selectedId, setSelectedId] = useState(null);
+  const [savedIds, setSavedIds] = useState(() => new Set());
+
+  useEffect(() => {
+    let isCurrent = true;
+
+    async function getJobs() {
+      setJobsLoading(true);
+      setJobsError("");
+
+      const { data, error } = await supabase
+        .from("job_listings")
+        .select("*");
+
+      if (!isCurrent) return;
+
+      if (error) {
+        console.error("Error fetching jobs:", error);
+        setJobsError(error.message);
+        setJobsLoading(false);
+        return;
+      }
+
+      const normalizedJobs = (data ?? []).map(normalizeJobRow);
+      console.log("Jobs received from Supabase:", data);
+      setJobListings(normalizedJobs);
+      setSelectedId(normalizedJobs[0]?.id ?? null);
+      setSavedIds(new Set(normalizedJobs.filter((job) => job.savedByDefault).map((job) => job.id)));
+      setJobsLoading(false);
+    }
+
+    getJobs();
+    return () => {
+      isCurrent = false;
+    };
+  }, []);
 
   const filteredJobs = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -89,7 +126,7 @@ export default function App() {
         </div>
       </nav>
 
-      {activeTab === "Jobs" && <JobsTab filteredJobs={filteredJobs} selectedJob={selectedJob} selectedId={selectedId} setSelectedId={setSelectedId} savedIds={savedIds} toggleSaved={toggleSaved} query={query} setQuery={setQuery} datePosted={datePosted} setDatePosted={setDatePosted} selectedJobTitles={selectedJobTitles} setSelectedJobTitles={setSelectedJobTitles} type={type} setType={setType} addJob={addJob} />}
+      {activeTab === "Jobs" && <JobsTab filteredJobs={filteredJobs} selectedJob={selectedJob} setSelectedId={setSelectedId} savedIds={savedIds} toggleSaved={toggleSaved} query={query} setQuery={setQuery} datePosted={datePosted} setDatePosted={setDatePosted} selectedJobTitles={selectedJobTitles} setSelectedJobTitles={setSelectedJobTitles} type={type} setType={setType} addJob={addJob} jobsLoading={jobsLoading} jobsError={jobsError} />}
       {activeTab === "Field Schools" && <FieldSchoolsTab />}
       {activeTab === "Conferences" && <ConferencesTab />}
       {activeTab === "Social Media Influencers" && <InfluencersTab />}

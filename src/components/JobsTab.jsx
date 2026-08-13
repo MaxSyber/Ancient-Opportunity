@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Bookmark,
   BriefcaseBusiness,
@@ -15,7 +15,6 @@ import { jobTitles, jobTypes } from "../data/jobs";
 export default function JobsTab({
   filteredJobs,
   selectedJob,
-  selectedId,
   setSelectedId,
   savedIds,
   toggleSaved,
@@ -28,6 +27,8 @@ export default function JobsTab({
   type,
   setType,
   addJob,
+  jobsLoading,
+  jobsError,
 }) {
   const [showJobForm, setShowJobForm] = useState(false);
   const [showJobDetails, setShowJobDetails] = useState(false);
@@ -104,7 +105,7 @@ export default function JobsTab({
           <div className="job-list">
             {filteredJobs.map((job) => (
               <article
-                className={selectedJob.id === job.id ? "job-card selected" : "job-card"}
+                className={selectedJob?.id === job.id ? "job-card selected" : "job-card"}
                 key={job.id}
                 role="button"
                 tabIndex="0"
@@ -146,6 +147,10 @@ export default function JobsTab({
                       <strong>{job.compensation.display}</strong>
                     </div>
                     <div>
+                      <span className="job-card-label">Employment type</span>
+                      <strong className="employment-type">{job.employmentType}</strong>
+                    </div>
+                    <div>
                       <span className="job-card-label">Posted</span>
                       <strong>{job.dates.postedLabel}</strong>
                     </div>
@@ -167,10 +172,26 @@ export default function JobsTab({
               </article>
             ))}
 
-            {filteredJobs.length === 0 && (
+            {jobsLoading && (
               <div className="empty-state">
                 <Search size={28} />
-                <h3>No mock listings match those filters.</h3>
+                <h3>Loading job listings…</h3>
+                <p>Connecting to the Supabase job listings table.</p>
+              </div>
+            )}
+
+            {!jobsLoading && jobsError && (
+              <div className="empty-state" role="alert">
+                <BriefcaseBusiness size={28} />
+                <h3>Could not load job listings.</h3>
+                <p>{jobsError}</p>
+              </div>
+            )}
+
+            {!jobsLoading && !jobsError && filteredJobs.length === 0 && (
+              <div className="empty-state">
+                <Search size={28} />
+                <h3>No job listings found.</h3>
                 <p>Try widening the date, job title, or search text.</p>
               </div>
             )}
@@ -179,7 +200,7 @@ export default function JobsTab({
 
       </section>
 
-      {showJobDetails && (
+      {showJobDetails && selectedJob && (
         <div className="job-detail-modal" role="presentation" onMouseDown={() => setShowJobDetails(false)}>
           <section
             className="detail-panel"
@@ -191,7 +212,12 @@ export default function JobsTab({
             <button className="modal-close" type="button" onClick={() => setShowJobDetails(false)} aria-label="Close job details">×</button>
             <div className="detail-image" aria-hidden="true" />
             <div className="detail-content">
-              <span className="source-badge">{selectedJob.source.name}</span>
+              <div className="detail-company-heading">
+                <div className="company-logo-placeholder detail-company-logo" aria-label={`${selectedJob.employer.name} logo placeholder`}>
+                  <Building2 size={24} aria-hidden="true" />
+                </div>
+                <span className="source-badge">{selectedJob.employer.name}</span>
+              </div>
               <h2 id="job-detail-heading">{selectedJob.title}</h2>
               {selectedJob.description.html ? (
                 <div className="job-description-rich" dangerouslySetInnerHTML={{ __html: selectedJob.description.html }} />
@@ -205,20 +231,22 @@ export default function JobsTab({
                 <div><dt>Schedule</dt><dd>{selectedJob.schedule}</dd></div>
               </dl>
               <div className="detail-actions">
-                <a
-                  className="primary-action"
-                  href={selectedJob.urls.sourcePosting}
-                  target="_blank"
-                  rel="noreferrer"
-                  title="See Original Post"
-                  aria-describedby="view-posting-tooltip"
-                >
-                  <ExternalLink size={18} />View posting
-                </a>
-                <span className="sr-only" id="view-posting-tooltip">See Original Post</span>
+                {selectedJob.employer.website && (
+                  <a
+                    className="primary-action"
+                    href={selectedJob.employer.website}
+                    target="_blank"
+                    rel="noreferrer"
+                    title="View company website"
+                    aria-describedby="view-company-tooltip"
+                  >
+                    <ExternalLink size={18} />View company website
+                  </a>
+                )}
+                {selectedJob.employer.website && <span className="sr-only" id="view-company-tooltip">View the hiring company website</span>}
                 <button className={savedIds.has(selectedJob.id) ? "secondary-action saved" : "secondary-action"} type="button" onClick={() => toggleSaved(selectedJob.id)}><Bookmark size={18} />{savedIds.has(selectedJob.id) ? "Saved" : "Save"}</button>
               </div>
-              <div className="freshness-note"><CalendarDays size={17} /><span>Posted {selectedJob.dates.postedLabel}; {selectedJob.description.attribution}</span></div>
+              <div className="freshness-note"><CalendarDays size={17} /><span>Posted {selectedJob.dates.postedLabel}</span></div>
             </div>
           </section>
         </div>
@@ -229,42 +257,66 @@ export default function JobsTab({
 
 function JobPostingForm({ onSubmit, onCancel }) {
   const [jobTitleError, setJobTitleError] = useState("");
-  const [descriptionError, setDescriptionError] = useState("");
-  const descriptionRef = useRef(null);
+  const [showOtherJobTitle, setShowOtherJobTitle] = useState(false);
+  const [showOtherEmploymentType, setShowOtherEmploymentType] = useState(false);
+  const [salaryUnit, setSalaryUnit] = useState("yearly");
+  const [salaryInputError, setSalaryInputError] = useState("");
+
+  const handleSalaryKeyDown = (event) => {
+    if (event.ctrlKey || event.metaKey || event.altKey) return;
+    if (event.key.length === 1 && !/[0-9.]/.test(event.key)) {
+      event.preventDefault();
+      setSalaryInputError("Salary fields accept numbers only.");
+    }
+  };
+
+  const handleSalaryPaste = (event) => {
+    if (!/^\d*\.?\d*$/.test(event.clipboardData.getData("text").trim())) {
+      event.preventDefault();
+      setSalaryInputError("Salary fields accept numbers only.");
+    }
+  };
 
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    const selectedTitles = data.getAll("jobTitles");
+    const selectedTitles = data.getAll("jobTitles").map((jobTitle) => (
+      jobTitle === "Other" ? data.get("otherJobTitle").trim() : jobTitle
+    ));
     if (selectedTitles.length === 0) {
       setJobTitleError("Select at least one job title.");
       return;
     }
-    const descriptionText = descriptionRef.current?.innerText.trim() || "";
-    if (!descriptionText) {
-      setDescriptionError("Enter a job description.");
-      descriptionRef.current?.focus();
-      return;
-    }
-    const descriptionHtml = sanitizeRichText(descriptionRef.current.innerHTML);
-    const location = data.get("location").trim();
-    const postingUrl = data.get("postingUrl");
+    const title = data.get("title").trim();
+    const company = data.get("company").trim();
+    const companyWebsite = data.get("company_website");
+    const state = data.get("state").trim();
+    const selectedEmploymentType = data.get("employment_type");
+    const employmentType = selectedEmploymentType === "Other"
+      ? data.get("otherEmploymentType").trim()
+      : selectedEmploymentType;
+    const salaryMin = Number(data.get("salary_min"));
+    const salaryMax = Number(data.get("salary_max"));
+    const salaryUnit = data.get("salary_unit");
+    const description = data.get("description").trim();
+    const applyUrl = data.get("apply_url");
     const today = new Date().toISOString().slice(0, 10);
+
     onSubmit({
       id: `community-${Date.now()}`,
-      source: { name: "Community", externalId: null, url: postingUrl },
-      title: data.get("title").trim(),
-      employer: { name: data.get("organization").trim(), type: "Community submitted" },
-      location: { display: location, city: null, state: null, country: "US", isRemote: /remote/i.test(location) },
-      workplace: /remote/i.test(location) ? "Remote" : "On-site / field-based",
-      employmentType: data.get("employmentType") || "Not specified",
+      source: { name: "Direct post", externalId: null, url: applyUrl },
+      title,
+      employer: { name: company, type: "Direct post", website: companyWebsite },
+      location: { display: state, city: null, state, country: "US", isRemote: false },
+      workplace: "Not specified",
+      employmentType,
       jobTitles: selectedTitles,
-      compensation: { display: data.get("compensation").trim(), minAmount: null, maxAmount: null, currency: "USD", interval: null },
+      compensation: { display: formatSalaryRange(salaryMin, salaryMax, salaryUnit), minAmount: salaryMin, maxAmount: salaryMax, currency: "USD", interval: salaryUnit },
       dates: { postedLabel: "Just posted", postedDate: today, closingDate: null, importedAt: today },
-      schedule: data.get("employmentType") || "Not specified",
+      schedule: employmentType,
       tags: selectedTitles,
-      description: { summary: descriptionText, html: descriptionHtml, attribution: "Community-submitted listing; review pending." },
-      urls: { sourcePosting: postingUrl, apply: postingUrl },
+      description: { summary: description, attribution: "Community-submitted listing; review pending." },
+      urls: { sourcePosting: applyUrl, apply: applyUrl },
       savedByDefault: false,
     });
   };
@@ -272,51 +324,83 @@ function JobPostingForm({ onSubmit, onCancel }) {
   return (
     <section className="job-form-panel" aria-labelledby="post-job-heading">
       <div className="job-form-heading">
-        <div><p className="eyebrow">Community listing</p><h2 id="post-job-heading">Post an archaeology job</h2><p>Share a role with archaeology and cultural-resource professionals.</p></div>
+        <div><h2 id="post-job-heading">Post An Archaeology Job</h2><p>Share a role with archaeology and cultural-resource professionals.</p></div>
         <button className="form-close" type="button" onClick={onCancel} aria-label="Close job form">×</button>
       </div>
       <form className="job-posting-form" onSubmit={handleSubmit}>
         <div className="form-grid">
-          <FormField label="Job title *"><input name="title" required placeholder="e.g. Archaeological Field Technician" /></FormField>
-          <FormField label="Organization *"><input name="organization" required placeholder="Company, agency, or nonprofit" /></FormField>
+          <FormField label="Posting title *"><input name="title" required placeholder="e.g. Archaeological Field Technician" /></FormField>
+          <FormField label="Company *"><input name="company" required placeholder="Company, agency, or nonprofit" /></FormField>
           <fieldset className="job-title-field form-field-wide">
             <legend>Job Titles * <small>Select all that apply</small></legend>
             <div className="job-title-options">
               {jobTitles.slice(1).map((jobTitle) => (
-                <label key={jobTitle}><input name="jobTitles" type="checkbox" value={jobTitle} onChange={() => setJobTitleError("")} /><span>{jobTitle}</span></label>
+                <label key={jobTitle}>
+                  <input name="jobTitles" type="checkbox" value={jobTitle} onChange={() => setJobTitleError("")} />
+                  <span>{jobTitle}</span>
+                </label>
               ))}
+              <label>
+                <input
+                  name="jobTitles"
+                  type="checkbox"
+                  value="Other"
+                  checked={showOtherJobTitle}
+                  onChange={(event) => {
+                    setShowOtherJobTitle(event.target.checked);
+                    setJobTitleError("");
+                  }}
+                />
+                <span>Other</span>
+              </label>
             </div>
+            {showOtherJobTitle && (
+              <FormField label="Other job title *">
+                <input name="otherJobTitle" required placeholder="Enter the job title category" />
+              </FormField>
+            )}
             {jobTitleError && <p className="field-error" role="alert">{jobTitleError}</p>}
           </fieldset>
-          <FormField label="Employment type (optional)"><select name="employmentType" defaultValue=""><option value="">Not specified</option>{jobTypes.slice(1).map((jobType) => <option key={jobType}>{jobType}</option>)}</select></FormField>
-          <FormField label="Location *"><input name="location" required placeholder="City, State or Remote" /></FormField>
-          <FormField label="Compensation *"><input name="compensation" required placeholder="$22–28/hr or $60,000/year" /></FormField>
-          <div className="form-field form-field-wide">
-            <span>Job description *</span>
-            <div className="rich-text-editor">
-              <div className="rich-text-toolbar" aria-label="Description formatting">
-                <button type="button" onMouseDown={(event) => { event.preventDefault(); document.execCommand("bold"); }} aria-label="Bold selected text"><strong>B</strong></button>
-                <button type="button" onMouseDown={(event) => { event.preventDefault(); document.execCommand("italic"); }} aria-label="Italicize selected text"><em>I</em></button>
-                <button type="button" onMouseDown={(event) => { event.preventDefault(); document.execCommand("insertUnorderedList"); }} aria-label="Create bulleted list">• List</button>
-              </div>
-              <div
-                ref={descriptionRef}
-                className="rich-text-input"
-                contentEditable
-                role="textbox"
-                aria-multiline="true"
-                aria-label="Job description"
-                aria-describedby={descriptionError ? "description-error" : undefined}
-                data-placeholder="Paste or enter the role, responsibilities, and qualifications. Formatting and paragraph spacing will be preserved."
-                onInput={() => setDescriptionError("")}
-                suppressContentEditableWarning
-              />
-            </div>
-            {descriptionError && <p className="field-error" id="description-error" role="alert">{descriptionError}</p>}
-            <small>Paragraphs, blank lines, bold, italics, lists, and pasted font styles are preserved.</small>
+          <FormField label="Company website"><input name="company_website" type="url" placeholder="https://company.example" /></FormField>
+          <FormField label="State *"><input name="state" required placeholder="e.g. Arizona" /></FormField>
+          <FormField label="Application URL (optional)"><input name="apply_url" type="url" placeholder="https://..." /></FormField>
+          <FormField label="Employment type *">
+            <select
+              name="employment_type"
+              required
+              defaultValue=""
+              onChange={(event) => setShowOtherEmploymentType(event.target.value === "Other")}
+            >
+              <option value="" disabled>Select employment type</option>
+              {jobTypes.slice(1).map((jobType) => <option key={jobType}>{jobType}</option>)}
+              <option value="Other">Other</option>
+            </select>
+          </FormField>
+          {showOtherEmploymentType && (
+            <FormField label="Other employment type *">
+              <input name="otherEmploymentType" required placeholder="Enter the employment type" />
+            </FormField>
+          )}
+          <div className="salary-fields form-field-wide">
+            <FormField label="Salary Minimum *"><input className="salary-input" name="salary_min" type="number" inputMode="decimal" min="0" step="0.01" required placeholder={salaryUnit === "hourly" ? "22.00" : "55500"} onKeyDown={handleSalaryKeyDown} onPaste={handleSalaryPaste} onInput={() => setSalaryInputError("")} aria-describedby={salaryInputError ? "salary-input-error" : undefined} /></FormField>
+            <FormField label="Salary Maximum *"><input className="salary-input" name="salary_max" type="number" inputMode="decimal" min="0" step="0.01" required placeholder={salaryUnit === "hourly" ? "28.00" : "60000"} onKeyDown={handleSalaryKeyDown} onPaste={handleSalaryPaste} onInput={() => setSalaryInputError("")} aria-describedby={salaryInputError ? "salary-input-error" : undefined} /></FormField>
+            <FormField label="Salary Unit *"><select name="salary_unit" required value={salaryUnit} onChange={(event) => setSalaryUnit(event.target.value)}><option value="hourly">Hourly</option><option value="yearly">Yearly</option></select></FormField>
+            {salaryInputError && <p className="field-error salary-input-error" id="salary-input-error" role="alert">{salaryInputError}</p>}
           </div>
-          <FormField label="Job posting URL *" wide><input name="postingUrl" type="url" required placeholder="https://..." /></FormField>
-          <FormField label="Contact email (optional)" wide hint="Used for moderation or questions about the listing."><input name="contactEmail" type="email" placeholder="hiring@example.com" /></FormField>
+          <FormField label="Job description *" wide><textarea name="description" required rows="10" placeholder="Enter the role, responsibilities, qualifications, and other important details." /></FormField>
+          <FormField
+            label="Contact Email *"
+            wide
+            hint="This email will not be shared publicly and will only be used to contact you if there is an issue with your job posting."
+          >
+            <input
+              name="contact_email"
+              type="email"
+              required
+              placeholder="contact@example.com"
+              title="This email will not be shared publicly and will only be used to contact you if there is an issue with your job posting."
+            />
+          </FormField>
         </div>
         <div className="job-form-actions">
           <button className="secondary-action" type="button" onClick={onCancel}>Cancel</button>
@@ -327,32 +411,9 @@ function JobPostingForm({ onSubmit, onCancel }) {
   );
 }
 
-function sanitizeRichText(html) {
-  const template = document.createElement("template");
-  template.innerHTML = html;
-  const allowedTags = new Set(["P", "DIV", "BR", "STRONG", "B", "EM", "I", "U", "UL", "OL", "LI", "H1", "H2", "H3", "H4", "SPAN"]);
-
-  [...template.content.querySelectorAll("*")].forEach((element) => {
-    if (!allowedTags.has(element.tagName)) {
-      element.replaceWith(...element.childNodes);
-      return;
-    }
-
-    const fontFamily = element.style.fontFamily;
-    const fontSize = element.style.fontSize;
-    const fontWeight = element.style.fontWeight;
-    const fontStyle = element.style.fontStyle;
-    const textDecoration = element.style.textDecoration;
-    [...element.attributes].forEach((attribute) => element.removeAttribute(attribute.name));
-
-    if (fontFamily) element.style.fontFamily = fontFamily;
-    if (fontSize) element.style.fontSize = fontSize;
-    if (fontWeight) element.style.fontWeight = fontWeight;
-    if (fontStyle) element.style.fontStyle = fontStyle;
-    if (textDecoration) element.style.textDecoration = textDecoration;
-  });
-
-  return template.innerHTML;
+function formatSalaryRange(minimum, maximum, unit) {
+  const formatter = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 });
+  return `${formatter.format(minimum)}–${formatter.format(maximum)}/${unit === "hourly" ? "hour" : "year"}`;
 }
 
 function FormField({ label, hint, wide = false, children }) {

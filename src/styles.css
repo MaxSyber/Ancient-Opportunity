@@ -443,11 +443,22 @@ h1 {
   font-size: clamp(1.7rem, 3vw, 2.5rem);
 }
 
+.detail-company-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.detail-company-logo {
+  width: 48px;
+  height: 48px;
+}
+
 .modal-close {
-  position: absolute;
+  position: sticky;
   z-index: 2;
   top: 14px;
-  right: 14px;
+  margin: 14px 14px -56px auto;
   display: grid;
   place-items: center;
   width: 42px;
@@ -512,6 +523,10 @@ h1 {
   margin-bottom: 14px;
 }
 
+.list-heading .eyebrow {
+  color: #34423b;
+}
+
 .list-heading h2 {
   margin: 2px 0 0;
   font-size: 1.55rem;
@@ -573,6 +588,7 @@ h1 {
   align-items: start;
   gap: 18px;
   padding: 20px;
+  cursor: pointer;
   transition:
     transform 160ms ease,
     border-color 160ms ease,
@@ -586,6 +602,12 @@ h1 {
   transform: translateY(-2px);
 }
 
+.job-card:hover,
+.job-card:focus-visible {
+  outline: 3px solid #1f6e5b;
+  outline-offset: 3px;
+}
+
 .job-card-top {
   justify-content: space-between;
   align-items: flex-start;
@@ -595,6 +617,7 @@ h1 {
 .company-logo-placeholder {
   display: grid;
   place-items: center;
+  align-self: center;
   width: 76px;
   height: 76px;
   border: 1px dashed #bdb19f;
@@ -626,7 +649,7 @@ h1 {
 
 .job-card-facts {
   display: grid;
-  grid-template-columns: minmax(180px, 1.25fr) minmax(150px, 1fr) minmax(130px, 0.7fr) minmax(90px, 0.45fr);
+  grid-template-columns: minmax(130px, 1fr) minmax(125px, 0.9fr) minmax(130px, 0.85fr) minmax(115px, 0.7fr) minmax(90px, 0.55fr);
   gap: 10px;
   padding-top: 4px;
 }
@@ -645,6 +668,10 @@ h1 {
   color: #17201d;
   font-size: 0.88rem;
   line-height: 1.4;
+}
+
+.employment-type {
+  text-transform: capitalize;
 }
 
 .job-card-facts svg {
@@ -696,6 +723,11 @@ h1 {
   margin: 0;
   color: #596860;
   font-size: 0.92rem;
+}
+
+.company-line {
+  font-size: 1rem;
+  font-weight: 800;
 }
 
 .tag-row {
@@ -989,6 +1021,18 @@ h1 {
 .field-schools-heading p:last-child {
   margin: 0;
   color: #596860;
+}
+
+.field-schools-heading .section-progress-notice {
+  width: fit-content;
+  margin-top: 12px;
+  padding: 7px 10px;
+  border: 1px solid #c44536;
+  border-radius: 6px;
+  background: #f8dfda;
+  color: #8f271f;
+  font-size: 0.84rem;
+  font-weight: 800;
 }
 
 .field-school-form {
@@ -1295,6 +1339,21 @@ h1 {
   grid-column: 1 / -1;
 }
 
+.salary-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.salary-input-error {
+  grid-column: 1 / -1;
+  width: fit-content;
+  margin: -8px 0 0;
+  padding: 7px 10px;
+  border-radius: 6px;
+  background: #f8dfda;
+}
+
 .form-field input,
 .form-field select,
 .form-field textarea {
@@ -1314,73 +1373,29 @@ h1 {
   padding: 0 12px;
 }
 
+.salary-input {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.salary-input::-webkit-inner-spin-button,
+.salary-input::-webkit-outer-spin-button {
+  margin: 0;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
 .form-field textarea {
   resize: vertical;
   padding: 12px;
   line-height: 1.5;
 }
 
-.rich-text-editor {
-  overflow: hidden;
-  border: 1px solid #d8cdbb;
-  border-radius: 8px;
-  background: #fffaf1;
-}
-
-.rich-text-editor:focus-within {
-  border-color: #1f6e5b;
-  box-shadow: 0 0 0 3px rgba(31, 110, 91, 0.13);
-}
-
-.rich-text-toolbar {
-  display: flex;
-  gap: 5px;
-  padding: 7px;
-  border-bottom: 1px solid #d8cdbb;
-  background: #f0eadf;
-}
-
-.rich-text-toolbar button {
-  min-width: 34px;
-  min-height: 32px;
-  padding: 0 9px;
-  border: 1px solid #d8cdbb;
-  border-radius: 6px;
-  background: #fffaf1;
-  color: #34423b;
-}
-
-.rich-text-toolbar button:hover,
-.rich-text-toolbar button:focus-visible {
-  border-color: #1f6e5b;
-  background: #e8f2ed;
-}
-
-.rich-text-input {
-  min-height: 180px;
-  padding: 14px;
-  outline: 0;
-  color: #17201d;
-  font-weight: 500;
-  line-height: 1.55;
-  white-space: pre-wrap;
-}
-
-.rich-text-input:empty::before {
-  content: attr(data-placeholder);
-  color: #7b847f;
-  pointer-events: none;
-}
-
-.rich-text-input p,
-.rich-text-input div,
 .job-description-rich p,
 .job-description-rich div {
   margin: 0 0 1em;
 }
 
-.rich-text-input p:last-child,
-.rich-text-input div:last-child,
 .job-description-rich p:last-child,
 .job-description-rich div:last-child {
   margin-bottom: 0;
@@ -1682,6 +1697,10 @@ h1 {
     grid-template-columns: 1fr;
   }
 
+  .salary-fields {
+    grid-template-columns: 1fr;
+  }
+
   .job-title-options {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -1838,6 +1857,10 @@ h1 {
   color: #f7fbf8;
 }
 
+.dark-mode .list-heading .eyebrow {
+  color: #d6e7dd;
+}
+
 .dark-mode .source-badge,
 .dark-mode .source-chip.active,
 .dark-mode .freshness-note,
@@ -1961,32 +1984,6 @@ h1 {
 .dark-mode .form-field textarea {
   border-color: #3a4b44;
   background: #111a17;
-  color: #edf4ee;
-}
-
-.dark-mode .rich-text-editor {
-  border-color: #3a4b44;
-  background: #111a17;
-}
-
-.dark-mode .rich-text-toolbar {
-  border-color: #3a4b44;
-  background: #222d29;
-}
-
-.dark-mode .rich-text-toolbar button {
-  border-color: #3a4b44;
-  background: #18221f;
-  color: #edf4ee;
-}
-
-.dark-mode .rich-text-toolbar button:hover,
-.dark-mode .rich-text-toolbar button:focus-visible {
-  border-color: #4fb391;
-  background: #203d35;
-}
-
-.dark-mode .rich-text-input {
   color: #edf4ee;
 }
 

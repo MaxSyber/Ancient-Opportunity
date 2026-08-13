@@ -1,10 +1,28 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CalendarDays, ExternalLink, GraduationCap, MapPin, Plus } from "lucide-react";
 import { fieldSchools as initialFieldSchools } from "../data/fieldSchools";
+import { supabase } from "../supabaseClient";
+
+async function getFieldSchools() {
+  const { data, error } = await supabase
+    .from("field_schools")
+    .select("*");
+
+  if (error) {
+    console.error("Error fetching field schools:", error);
+    return;
+  }
+
+  console.log("Field schools:", data);
+}
 
 export default function FieldSchoolsTab() {
   const [fieldSchools, setFieldSchools] = useState(initialFieldSchools);
   const [showForm, setShowForm] = useState(false);
+
+  useEffect(() => {
+    getFieldSchools();
+  }, []);
 
   const addFieldSchool = (fieldSchool) => {
     setFieldSchools((current) => [fieldSchool, ...current]);
@@ -18,6 +36,7 @@ export default function FieldSchoolsTab() {
           <p className="eyebrow">Training opportunities</p>
           <h2 id="field-schools-heading">Archaeology field schools</h2>
           <p>All field schools are listed for free on Ancient Opportunity to help inspire and support the next generation of archaeologists.</p>
+          <p className="section-progress-notice" role="status">This section is still in progress.</p>
         </div>
         {showForm ? (
           <button
