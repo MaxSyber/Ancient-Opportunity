@@ -9,9 +9,9 @@ This project is a work in progress. I am currently learning Supabase and writing
 ## TODO
 
 - [X] Create a Supabase project
-- [ ] Create the jobs category
-- [ ] Link Supabase to the project
-- [ ] Display Supabase data on the page
+- [x] Create the jobs category
+- [x] Link Supabase to the project
+- [x] Display Supabase data on the page
 - [ ] Implement the create-job function to add a new row to Supabase
 
 ## Development
@@ -28,3 +28,23 @@ Create a production build with:
 ```bash
 npm run build
 ```
+
+
+React Employer Form
+        │
+        │ supabase.rpc('submit_job')
+        ▼
+┌─────────────────────────────┐
+│ PostgreSQL submit_job()     │
+│                             │
+│ 1. Clean inputs             │
+│ 2. Validate inputs          │
+│ 3. Insert public job        │
+│ 4. Get generated ID         │
+│ 5. Insert private contact   │
+└──────────────┬──────────────┘
+               │
+       ┌───────┴─────────┐
+       ▼                 ▼
+ job_listings       job_contacts
+ PUBLIC DATA        PRIVATE DATA

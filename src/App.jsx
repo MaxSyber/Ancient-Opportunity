@@ -30,9 +30,18 @@ export default function App() {
       setJobsLoading(true);
       setJobsError("");
 
-      const { data, error } = await supabase
-        .from("job_listings")
-        .select("*");
+      let { data, error } = await supabase.rpc("get_ranked_jobs");
+
+      if (error) {
+        console.warn("Ranked jobs query unavailable; falling back to posted date ordering:", {
+          message: error.message,
+          code: error.code,
+        });
+        ({ data, error } = await supabase
+          .from("job_listings")
+          .select("*")
+          .order("posted_date", { ascending: false, nullsFirst: false }));
+      }
 
       if (!isCurrent) return;
 

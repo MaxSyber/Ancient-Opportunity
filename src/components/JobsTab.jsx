@@ -11,6 +11,7 @@ import {
   Star,
 } from "lucide-react";
 import { jobTitles, jobTypes } from "../data/jobs";
+import { supabase } from "../supabaseClient";
 
 export default function JobsTab({
   filteredJobs,
@@ -26,7 +27,6 @@ export default function JobsTab({
   setSelectedJobTitles,
   type,
   setType,
-  addJob,
   jobsLoading,
   jobsError,
 }) {
@@ -41,11 +41,6 @@ export default function JobsTab({
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [showJobDetails]);
-
-  const handleAddJob = (job) => {
-    addJob(job);
-    setShowJobForm(false);
-  };
 
   return (
     <>
@@ -76,7 +71,7 @@ export default function JobsTab({
         <SelectControl icon={<BriefcaseBusiness size={18} />} label="Type" value={type} onChange={setType} options={jobTypes} />
       </section>
 
-      {showJobForm && <JobPostingForm onSubmit={handleAddJob} onCancel={() => setShowJobForm(false)} />}
+      {showJobForm && <JobPostingForm onCancel={() => setShowJobForm(false)} />}
 
       <section className="dashboard-grid">
         <section className="jobs-column" aria-label="Job listings">
@@ -130,7 +125,7 @@ export default function JobsTab({
                       <span className="job-card-label">Title</span>
                       <h3>{job.title}</h3>
                     </div>
-                    <span className="source-badge">{job.source.name}</span>
+                    <span className={job.source.isDirectPost ? "source-badge employer-post-badge" : "source-badge"}>{job.source.name}</span>
                   </div>
                   <p className="company-line"><Building2 size={16} />{job.employer.name}</p>
                   <div className="job-card-facts">
@@ -255,12 +250,15 @@ export default function JobsTab({
   );
 }
 
-function JobPostingForm({ onSubmit, onCancel }) {
+function JobPostingForm({ onCancel }) {
   const [jobTitleError, setJobTitleError] = useState("");
   const [showOtherJobTitle, setShowOtherJobTitle] = useState(false);
   const [showOtherEmploymentType, setShowOtherEmploymentType] = useState(false);
-  const [salaryUnit, setSalaryUnit] = useState("yearly");
+  const [salaryUnit, setSalaryUnit] = useState("");
   const [salaryInputError, setSalaryInputError] = useState("");
+  const [submissionError, setSubmissionError] = useState("");
+  const [submissionSuccess, setSubmissionSuccess] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSalaryKeyDown = (event) => {
     if (event.ctrlKey || event.metaKey || event.altKey) return;
@@ -277,48 +275,99 @@ function JobPostingForm({ onSubmit, onCancel }) {
     }
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    const data = new FormData(event.currentTarget);
+    if (isSubmitting) return;
+
+    const form = event.currentTarget;
+    const data = new FormData(form);
+    setJobTitleError("");
+    setSalaryInputError("");
+    setSubmissionError("");
+    setSubmissionSuccess("");
+
     const selectedTitles = data.getAll("jobTitles").map((jobTitle) => (
-      jobTitle === "Other" ? data.get("otherJobTitle").trim() : jobTitle
-    ));
-    if (selectedTitles.length === 0) {
-      setJobTitleError("Select at least one job title.");
+      jobTitle === "Other" ? String(data.get("otherJobTitle") ?? "").trim() : String(jobTitle).trim()
+    )).filter(Boolean);
+    if (selectedTitles.length === 0 || (data.getAll("jobTitles").includes("Other") && !String(data.get("otherJobTitle") ?? "").trim())) {
+      setJobTitleError(selectedTitles.length === 0 ? "Select at least one job title." : "Enter the other job title.");
       return;
     }
-    const title = data.get("title").trim();
-    const company = data.get("company").trim();
-    const companyWebsite = data.get("company_website");
-    const state = data.get("state").trim();
-    const selectedEmploymentType = data.get("employment_type");
+    const postingTitle = String(data.get("title") ?? "").trim();
+    const company = String(data.get("company") ?? "").trim();
+    const companyWebsite = optionalText(data.get("company_website"));
+    const state = String(data.get("state") ?? "").trim();
+    const selectedEmploymentType = String(data.get("employment_type") ?? "").trim();
     const employmentType = selectedEmploymentType === "Other"
-      ? data.get("otherEmploymentType").trim()
+      ? String(data.get("otherEmploymentType") ?? "").trim()
       : selectedEmploymentType;
-    const salaryMin = Number(data.get("salary_min"));
-    const salaryMax = Number(data.get("salary_max"));
-    const salaryUnit = data.get("salary_unit");
-    const description = data.get("description").trim();
-    const applyUrl = data.get("apply_url");
-    const today = new Date().toISOString().slice(0, 10);
+    const salaryMin = optionalNumber(data.get("salary_min"));
+    const salaryMax = optionalNumber(data.get("salary_max"));
+    const salaryUnitValue = String(data.get("salary_unit") ?? "").trim();
+    const description = String(data.get("description") ?? "").trim();
+    const applyUrl = optionalText(data.get("apply_url"));
+    const contactEmail = String(data.get("contact_email") ?? "").trim();
 
-    onSubmit({
-      id: `community-${Date.now()}`,
-      source: { name: "Direct post", externalId: null, url: applyUrl },
-      title,
-      employer: { name: company, type: "Direct post", website: companyWebsite },
-      location: { display: state, city: null, state, country: "US", isRemote: false },
-      workplace: "Not specified",
-      employmentType,
-      jobTitles: selectedTitles,
-      compensation: { display: formatSalaryRange(salaryMin, salaryMax, salaryUnit), minAmount: salaryMin, maxAmount: salaryMax, currency: "USD", interval: salaryUnit },
-      dates: { postedLabel: "Just posted", postedDate: today, closingDate: null, importedAt: today },
-      schedule: employmentType,
-      tags: selectedTitles,
-      description: { summary: description, attribution: "Community-submitted listing; review pending." },
-      urls: { sourcePosting: applyUrl, apply: applyUrl },
-      savedByDefault: false,
-    });
+    if (![postingTitle, company, state, employmentType, description].every(Boolean)) {
+      setSubmissionError("Please complete all required fields.");
+      return;
+    }
+    if (!/^\S+@\S+\.\S+$/.test(contactEmail)) {
+      setSubmissionError("Enter a valid contact email address.");
+      return;
+    }
+    if (salaryMin === undefined || salaryMax === undefined) {
+      setSalaryInputError("Salary minimum and maximum must be valid numbers.");
+      return;
+    }
+    if (salaryMin !== null && salaryMax !== null && salaryMin > salaryMax) {
+      setSalaryInputError("Salary minimum cannot exceed salary maximum.");
+      return;
+    }
+    if ((salaryMin !== null && salaryMin < 0) || (salaryMax !== null && salaryMax < 0)) {
+      setSalaryInputError("Salary values cannot be negative.");
+      return;
+    }
+    if ((companyWebsite && !isValidHttpUrl(companyWebsite)) || (applyUrl && !isValidHttpUrl(applyUrl))) {
+      setSubmissionError("Company and application URLs must be valid http or https URLs.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const { data: newJobId, error } = await supabase.rpc("submit_job", {
+        p_posting_title: postingTitle,
+        p_title: selectedTitles.join(", "),
+        p_company: company,
+        p_state: state,
+        p_salary_min: salaryMin,
+        p_salary_max: salaryMax,
+        p_salary_unit: salaryUnitValue || null,
+        p_description: description,
+        p_apply_url: applyUrl,
+        p_employment_type: employmentType || null,
+        p_company_website: companyWebsite,
+        p_contact_email: contactEmail,
+      });
+
+      if (error) {
+        console.error("Error submitting job:", { message: error.message, code: error.code, details: error.details });
+        setSubmissionError("We couldn't submit your job. Please try again.");
+        return;
+      }
+
+      console.info("Job submitted for moderation:", newJobId);
+      form.reset();
+      setShowOtherJobTitle(false);
+      setShowOtherEmploymentType(false);
+      setSalaryUnit("");
+      setSubmissionSuccess("Your job has been submitted successfully and will appear on Ancient Opportunity after it has been reviewed.");
+    } catch (error) {
+      console.error("Unexpected error submitting job:", error);
+      setSubmissionError("We couldn't submit your job. Please check your connection and try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -327,7 +376,7 @@ function JobPostingForm({ onSubmit, onCancel }) {
         <div><h2 id="post-job-heading">Post An Archaeology Job</h2><p>Share a role with archaeology and cultural-resource professionals.</p></div>
         <button className="form-close" type="button" onClick={onCancel} aria-label="Close job form">×</button>
       </div>
-      <form className="job-posting-form" onSubmit={handleSubmit}>
+      <form className="job-posting-form" onSubmit={handleSubmit} noValidate>
         <div className="form-grid">
           <FormField label="Posting title *"><input name="title" required placeholder="e.g. Archaeological Field Technician" /></FormField>
           <FormField label="Company *"><input name="company" required placeholder="Company, agency, or nonprofit" /></FormField>
@@ -382,9 +431,9 @@ function JobPostingForm({ onSubmit, onCancel }) {
             </FormField>
           )}
           <div className="salary-fields form-field-wide">
-            <FormField label="Salary Minimum *"><input className="salary-input" name="salary_min" type="number" inputMode="decimal" min="0" step="0.01" required placeholder={salaryUnit === "hourly" ? "22.00" : "55500"} onKeyDown={handleSalaryKeyDown} onPaste={handleSalaryPaste} onInput={() => setSalaryInputError("")} aria-describedby={salaryInputError ? "salary-input-error" : undefined} /></FormField>
-            <FormField label="Salary Maximum *"><input className="salary-input" name="salary_max" type="number" inputMode="decimal" min="0" step="0.01" required placeholder={salaryUnit === "hourly" ? "28.00" : "60000"} onKeyDown={handleSalaryKeyDown} onPaste={handleSalaryPaste} onInput={() => setSalaryInputError("")} aria-describedby={salaryInputError ? "salary-input-error" : undefined} /></FormField>
-            <FormField label="Salary Unit *"><select name="salary_unit" required value={salaryUnit} onChange={(event) => setSalaryUnit(event.target.value)}><option value="hourly">Hourly</option><option value="yearly">Yearly</option></select></FormField>
+            <FormField label="Salary Minimum"><input className="salary-input" name="salary_min" type="number" inputMode="decimal" min="0" step="0.01" placeholder={salaryUnit === "hourly" ? "22.00" : "55500"} onKeyDown={handleSalaryKeyDown} onPaste={handleSalaryPaste} onInput={() => setSalaryInputError("")} aria-describedby={salaryInputError ? "salary-input-error" : undefined} /></FormField>
+            <FormField label="Salary Maximum"><input className="salary-input" name="salary_max" type="number" inputMode="decimal" min="0" step="0.01" placeholder={salaryUnit === "hourly" ? "28.00" : "60000"} onKeyDown={handleSalaryKeyDown} onPaste={handleSalaryPaste} onInput={() => setSalaryInputError("")} aria-describedby={salaryInputError ? "salary-input-error" : undefined} /></FormField>
+            <FormField label="Salary Unit"><select name="salary_unit" value={salaryUnit} onChange={(event) => setSalaryUnit(event.target.value)}><option value="">Not provided</option><option value="hourly">Hourly</option><option value="yearly">Yearly</option></select></FormField>
             {salaryInputError && <p className="field-error salary-input-error" id="salary-input-error" role="alert">{salaryInputError}</p>}
           </div>
           <FormField label="Job description *" wide><textarea name="description" required rows="10" placeholder="Enter the role, responsibilities, qualifications, and other important details." /></FormField>
@@ -403,17 +452,35 @@ function JobPostingForm({ onSubmit, onCancel }) {
           </FormField>
         </div>
         <div className="job-form-actions">
-          <button className="secondary-action" type="button" onClick={onCancel}>Cancel</button>
-          <button className="influencer-submit" type="submit"><Plus size={18} />Publish listing</button>
+          <button className="secondary-action" type="button" onClick={onCancel} disabled={isSubmitting}>Cancel</button>
+          <button className="influencer-submit" type="submit" disabled={isSubmitting}><Plus size={18} />{isSubmitting ? "Submitting..." : "Submit listing"}</button>
         </div>
+        {submissionError && <p className="field-error" role="alert">{submissionError}</p>}
+        {submissionSuccess && <p className="submission-success" role="status">{submissionSuccess}</p>}
       </form>
     </section>
   );
 }
 
-function formatSalaryRange(minimum, maximum, unit) {
-  const formatter = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 });
-  return `${formatter.format(minimum)}–${formatter.format(maximum)}/${unit === "hourly" ? "hour" : "year"}`;
+function optionalText(value) {
+  const trimmed = String(value ?? "").trim();
+  return trimmed || null;
+}
+
+function optionalNumber(value) {
+  const trimmed = String(value ?? "").trim();
+  if (!trimmed) return null;
+  const number = Number(trimmed);
+  return Number.isFinite(number) ? number : undefined;
+}
+
+function isValidHttpUrl(value) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
 }
 
 function FormField({ label, hint, wide = false, children }) {

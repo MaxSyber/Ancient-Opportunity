@@ -690,6 +690,11 @@ h1 {
   font-weight: 850;
 }
 
+.source-badge.employer-post-badge {
+  background: #f6e7b0;
+  color: #6f4e00;
+}
+
 .save-button {
   display: inline-flex;
   align-items: center;
@@ -1043,6 +1048,17 @@ h1 {
   background: #fbf7ef;
 }
 
+.field-school-form .form-field {
+  align-self: start;
+  align-content: start;
+}
+
+.field-school-date-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 220px));
+  gap: 16px;
+}
+
 .field-school-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1058,6 +1074,16 @@ h1 {
   border: 1px solid #ded6c7;
   border-radius: 8px;
   background: #fbf7ef;
+  cursor: pointer;
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.field-school-card:hover,
+.field-school-card:focus-visible {
+  border-color: #a99a7f;
+  box-shadow: 0 14px 28px rgba(45, 38, 28, 0.12);
+  transform: translateY(-2px);
+  outline: none;
 }
 
 .field-school-card-top,
@@ -1122,6 +1148,17 @@ h1 {
 .field-school-description {
   color: #556259;
   line-height: 1.55;
+}
+
+.field-school-detail-panel .field-school-organization {
+  display: block;
+  margin-top: -12px;
+  font-size: 1rem;
+}
+
+.field-school-detail-panel .field-school-description {
+  margin: 22px 0;
+  white-space: pre-line;
 }
 
 .field-school-card .conference-website {
@@ -1709,6 +1746,10 @@ h1 {
     grid-column: auto;
   }
 
+  .field-school-date-fields {
+    grid-template-columns: 1fr;
+  }
+
   .form-section-heading {
     align-items: flex-start;
     flex-direction: column;
@@ -1867,6 +1908,11 @@ h1 {
 .dark-mode .conference-count {
   background: #203d35;
   color: #9de0c8;
+}
+
+.dark-mode .source-badge.employer-post-badge {
+  background: #5a4510;
+  color: #ffd977;
 }
 
 .dark-mode .tag-row span,

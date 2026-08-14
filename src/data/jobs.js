@@ -37,11 +37,16 @@ export function normalizeJobRow(row) {
   return {
     id: String(row.id),
     source: {
-      name: source.name ?? row.source_name ?? "Ancient Opportunity",
+      name: row.is_direct_post === true
+        ? "Posted by Employer"
+        : row.is_direct_post === false
+          ? "Posted by Ancient Opportunity"
+          : (source.name ?? row.source_name ?? "Ancient Opportunity"),
       externalId: source.externalId ?? row.external_id ?? null,
       url: source.url ?? row.source_url ?? sourcePosting,
+      isDirectPost: row.is_direct_post === true,
     },
-    title: row.title ?? "Untitled archaeology position",
+    title: row.posting_title ?? row.title ?? "Untitled archaeology position",
     employer: {
       name: employer.name ?? row.employer_name ?? row.organization ?? row.company ?? "Organization not listed",
       type: employer.type ?? row.employer_type ?? "Unknown",
@@ -70,7 +75,7 @@ export function normalizeJobRow(row) {
       closingDate: dates.closingDate ?? row.closing_date ?? null,
       importedAt: dates.importedAt ?? row.imported_at ?? row.created_at ?? null,
     },
-    schedule: row.schedule ?? row.employment_type ?? "Not specified",
+    schedule: capitalizeFirst(row.schedule ?? row.employment_type ?? "Not specified"),
     tags: arrayValue(row.tags),
     description: {
       summary: description.summary ?? (typeof row.description === "string" ? row.description : null) ?? row.summary ?? "No description provided.",
@@ -138,6 +143,11 @@ function numberValue(value) {
   if (value === null || value === undefined || value === "") return null;
   const number = Number(value);
   return Number.isFinite(number) ? number : null;
+}
+
+function capitalizeFirst(value) {
+  const text = String(value).trim();
+  return text ? `${text.charAt(0).toUpperCase()}${text.slice(1)}` : "Not specified";
 }
 
 function formatPostedDate(value) {
