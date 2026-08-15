@@ -1,47 +1,54 @@
-export const fieldSchools = [
-  {
-    id: "mock-great-basin-field-school-2027",
-    name: "Great Basin Survey & Excavation Field School",
-    organization: "Silver State Archaeology Institute",
-    location: "Ely, Nevada",
-    dates: "May 18–June 12, 2027",
-    seasonYear: "Spring 2027",
-    applicationDeadline: "February 15, 2027",
-    cost: "$3,200",
-    format: "4 weeks · 6 credits",
-    methods: ["Pedestrian survey", "Excavation", "GIS", "Site recording"],
-    description: "A mock field program focused on Great Basin settlement patterns, survey methods, excavation, mapping, and artifact processing.",
-    website: "https://example.com/field-schools/great-basin",
-    isMock: true,
-  },
-  {
-    id: "mock-chesapeake-field-school-2027",
-    name: "Chesapeake Historical Archaeology Field School",
-    organization: "Tidewater Heritage College",
-    location: "Annapolis, Maryland",
-    dates: "June 7–July 2, 2027",
-    seasonYear: "Summer 2027",
-    applicationDeadline: "March 1, 2027",
-    cost: "$2,750",
-    format: "4 weeks · 4 credits",
-    methods: ["Historical archaeology", "Excavation", "Archives", "Artifact analysis"],
-    description: "A mock urban archaeology program combining excavation of an eighteenth-century site with archival research and laboratory analysis.",
-    website: "https://example.com/field-schools/chesapeake",
-    isMock: true,
-  },
-  {
-    id: "mock-mississippi-mounds-field-school-2027",
-    name: "Mississippi Mounds Research Field School",
-    organization: "Lower Valley Archaeological Project",
-    location: "Natchez, Mississippi",
-    dates: "July 6–August 1, 2027",
-    seasonYear: "Summer 2027",
-    applicationDeadline: "April 10, 2027",
-    cost: "$1,950",
-    format: "4 weeks · Certificate option",
-    methods: ["Remote sensing", "Geophysics", "Public archaeology", "Collections"],
-    description: "A mock community-centered program featuring noninvasive survey, targeted testing, collections work, and public interpretation.",
-    website: "https://example.com/field-schools/mississippi-mounds",
-    isMock: true,
-  },
-];
+export function normalizeFieldSchoolRow(row) {
+  return {
+    id: String(row.id),
+    name: row.program_name,
+    organization: row.organization || "Organization not listed",
+    location: row.location || "Location not listed",
+    dates: formatDateRange(row.start_date, row.end_date),
+    seasonYear: row.season_year || "Not specified",
+    applicationDeadline: formatDate(row.application_deadline),
+    cost: formatCost(row.cost),
+    format: row.format || "Not specified",
+    methods: splitMethods(row.methods_taught),
+    description: row.program_description || "No program description provided.",
+    website: row.website_url || "",
+  };
+}
+
+function formatDateRange(startDate, endDate) {
+  if (!startDate && !endDate) return "Dates not specified";
+  if (!startDate) return `Ends ${formatDate(endDate)}`;
+  if (!endDate) return `Starts ${formatDate(startDate)}`;
+  return `${formatDate(startDate)}–${formatDate(endDate)}`;
+}
+
+function formatDate(value) {
+  if (!value) return "Not specified";
+  const match = String(value).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  const date = match
+    ? new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]))
+    : new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  }).format(date);
+}
+
+function formatCost(value) {
+  if (value === null || value === undefined || value === "") return "Not specified";
+  const amount = Number(value);
+  if (!Number.isFinite(amount)) return String(value);
+  if (amount === 0) return "Free";
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: Number.isInteger(amount) ? 0 : 2,
+  }).format(amount);
+}
+
+function splitMethods(value) {
+  if (!value?.trim()) return [];
+  return value.split(/[,;\n]/).map((method) => method.trim()).filter(Boolean);
+}

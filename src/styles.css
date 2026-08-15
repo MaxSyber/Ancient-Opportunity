@@ -1028,18 +1028,6 @@ h1 {
   color: #596860;
 }
 
-.field-schools-heading .section-progress-notice {
-  width: fit-content;
-  margin-top: 12px;
-  padding: 7px 10px;
-  border: 1px solid #c44536;
-  border-radius: 6px;
-  background: #f8dfda;
-  color: #8f271f;
-  font-size: 0.84rem;
-  font-weight: 800;
-}
-
 .field-school-form {
   margin-bottom: 22px;
   padding: clamp(18px, 3vw, 28px);
@@ -1150,6 +1138,14 @@ h1 {
   line-height: 1.55;
 }
 
+.field-school-card-description {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
 .field-school-detail-panel .field-school-organization {
   display: block;
   margin-top: -12px;
@@ -1163,11 +1159,6 @@ h1 {
 
 .field-school-card .conference-website {
   margin-top: auto;
-}
-
-.mock-badge {
-  background: #f5dfa9;
-  color: #59400e;
 }
 
 .equipment-stores-intro {
@@ -2014,11 +2005,6 @@ h1 {
 
 .dark-mode .field-school-details div {
   background: #222d29;
-}
-
-.dark-mode .mock-badge {
-  background: #51431f;
-  color: #f5dfa9;
 }
 
 .dark-mode .equipment-link-preview {
