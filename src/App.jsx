@@ -109,31 +109,30 @@ export default function App() {
     <main className={darkMode ? "app-shell dark-mode" : "app-shell"}>
       <section className="top-band">
         <div className="hero-panel">
-          <div className="brand-lockup"><div><p className="eyebrow">Ancient Opportunity</p><h1>Ancient Opportunity</h1></div></div>
+          <div className="brand-lockup"><h1>Ancient Opportunity</h1></div>
           <div className="nav-actions">
             <button className="icon-button" type="button" aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"} title={darkMode ? "Switch to light mode" : "Switch to dark mode"} aria-pressed={darkMode} onClick={() => setDarkMode((current) => !current)}>
               {darkMode ? <Sun size={20} /> : <Moon size={20} />}
             </button>
             <button className="icon-button" type="button" aria-label="Open saved jobs"><Bookmark size={20} /><span>{savedIds.size}</span></button>
           </div>
+          <nav className="tabs-band" aria-label="Ancient Opportunity sections">
+            <div className="topbar-tabs">
+              {tabs.map((tab) => (
+                <button
+                  className={activeTab === tab ? "section-tab active" : "section-tab"}
+                  key={tab}
+                  type="button"
+                  aria-pressed={activeTab === tab}
+                  onClick={() => setActiveTab(tab)}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+          </nav>
         </div>
       </section>
-
-      <nav className="tabs-band" aria-label="Ancient Opportunity sections">
-        <div className="topbar-tabs">
-          {tabs.map((tab) => (
-            <button
-              className={activeTab === tab ? "section-tab active" : "section-tab"}
-              key={tab}
-              type="button"
-              aria-pressed={activeTab === tab}
-              onClick={() => setActiveTab(tab)}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
-      </nav>
 
       {activeTab === "Jobs" && <JobsTab filteredJobs={filteredJobs} selectedJob={selectedJob} setSelectedId={setSelectedId} savedIds={savedIds} toggleSaved={toggleSaved} query={query} setQuery={setQuery} datePosted={datePosted} setDatePosted={setDatePosted} selectedJobTitles={selectedJobTitles} setSelectedJobTitles={setSelectedJobTitles} type={type} setType={setType} addJob={addJob} jobsLoading={jobsLoading} jobsError={jobsError} />}
       {activeTab === "Field Schools" && <FieldSchoolsTab />}
