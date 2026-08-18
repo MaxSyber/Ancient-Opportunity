@@ -109,7 +109,7 @@ export default function App() {
     <main className={darkMode ? "app-shell dark-mode" : "app-shell"}>
       <section className="top-band">
         <div className="hero-panel">
-          <div className="brand-lockup"><h1>Ancient Opportunity</h1></div>
+          <div className="brand-lockup"><h1>Ancient Opportunity</h1><span className="alpha-badge">Alpha</span></div>
           <div className="nav-actions">
             <button className="icon-button" type="button" aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"} title={darkMode ? "Switch to light mode" : "Switch to dark mode"} aria-pressed={darkMode} onClick={() => setDarkMode((current) => !current)}>
               {darkMode ? <Sun size={20} /> : <Moon size={20} />}

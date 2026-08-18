@@ -12,7 +12,24 @@ This project is a work in progress. I am currently learning Supabase and writing
 - [x] Create the jobs category
 - [x] Link Supabase to the project
 - [x] Display Supabase data on the page
-- [ ] Implement the create-job function to add a new row to Supabase
+- [x] Implement the create-job function to add a new row to Supabase
+
+- [x] Create the field schools category
+- [x] Import Real data for a few field schools
+- [x] Display Supabase data on the page
+- [x] Implement the create-feild school function to add a new row to Supabase
+
+- [x] Create the Social influencers category
+- [x] Import Real data influencers
+- [x] Display Supabase data on the page
+- [x] Implement the recomend an influencer school function to add a new row to Supabase
+
+- [] Add company logos to jobs page
+company logo renders at 76x76px codex recomends preping 304*304 or 512*512 jpg formates for crisp images.
+- [x] Add alpha tag
+- [] Create company email and have each submit send a "new posting" message the the main email
+- [] Purchase website url
+- [] Deploy Live Alpha version
 
 ## Development
 

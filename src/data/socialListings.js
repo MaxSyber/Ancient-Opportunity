@@ -1,54 +1,100 @@
 import { supabase } from "../supabaseClient";
 
-export const SOCIAL_TABLES = {
-  listings: "social_listings",
-  contacts: "social_contacts",
-};
+export const SOCIAL_PLATFORMS = [
+  { label: "Instagram", field: "instagram_url" },
+  { label: "TikTok", field: "tiktok_url" },
+  { label: "YouTube", field: "youtube_url" },
+  { label: "X", field: "x_url" },
+  { label: "Podcast", field: "podcast_url" },
+  { label: "Other/Personal Website", field: "website_url" },
+];
 
-/**
- * Fetches public creator records without coupling the UI to a fixed column list.
- * Add an explicit select list here once the final table schema is settled.
- */
+/** Fetches moderator-approved creator profiles through the read-only public RPC. */
 export async function getSocialListings() {
-  const { data, error } = await supabase
-    .from(SOCIAL_TABLES.listings)
-    .select("*")
-    .order("created_at", { ascending: false });
+  const { data, error } = await supabase.rpc("get_approved_social_listings");
 
   if (error) throw error;
-  return data ?? [];
+  return (data ?? []).map(normalizeSocialListing);
 }
 
 /**
- * Creates a public listing and its private contact record.
- *
- * The caller supplies objects shaped to the final database schema. Keeping the
- * contact insert here prevents contact information from leaking into the public
- * listing query. `social_listing_id` is the expected foreign-key column.
- *
- * Before using this in production, prefer moving both inserts into a Supabase
- * RPC so they run atomically and the contact table never needs direct INSERT
- * permission from the browser.
+ * Atomically creates a pending creator listing and its private contact record.
+ * Direct browser access to both tables remains disabled by the SQL policy script.
  */
-export async function createSocialListing({ listing, contact }) {
-  const { data: createdListing, error: listingError } = await supabase
-    .from(SOCIAL_TABLES.listings)
-    .insert(listing)
-    .select("id")
-    .single();
+export async function createSocialListing(listing) {
+  const { data, error } = await supabase.rpc("submit_social_listing", {
+    p_name: listing.name,
+    p_instagram_url: listing.instagram_url,
+    p_tiktok_url: listing.tiktok_url,
+    p_youtube_url: listing.youtube_url,
+    p_x_url: listing.x_url,
+    p_podcast_url: listing.podcast_url,
+    p_website_url: listing.website_url,
+    p_primary_profile_url: listing.primary_profile_url,
+    p_content_focus: listing.content_focus,
+    p_channel_bio: listing.channel_bio,
+    p_contact_email: listing.contact_email,
+  });
 
-  if (listingError) throw listingError;
+  if (error) throw error;
+  return data;
+}
 
-  const { error: contactError } = await supabase
-    .from(SOCIAL_TABLES.contacts)
-    .insert({ ...contact, social_listing_id: createdListing.id });
+export function normalizeSocialListing(row) {
+  const accounts = SOCIAL_PLATFORMS
+    .map(({ label, field }) => ({
+      platform: label,
+      url: row[field],
+      handle: formatAccountLabel(row[field], label),
+    }))
+    .filter((account) => account.url);
+  const primaryAccountIndex = accounts.findIndex((account) => urlsMatch(account.url, row.primary_profile_url));
+  const accountsWithPrimary = accounts.map((account, index) => ({
+    ...account,
+    isPrimary: index === primaryAccountIndex,
+  }));
+  const primaryAccount = accountsWithPrimary[primaryAccountIndex] ?? accountsWithPrimary[0];
+  const orderedAccounts = primaryAccountIndex > 0
+    ? [accountsWithPrimary[primaryAccountIndex], ...accountsWithPrimary.filter((_, index) => index !== primaryAccountIndex)]
+    : accountsWithPrimary;
+  const name = row.name?.trim() || "Unnamed creator";
 
-  if (contactError) {
-    const error = new Error("The creator listing was saved, but its contact record could not be saved.");
-    error.cause = contactError;
-    error.listingId = createdListing.id;
-    throw error;
+  return {
+    id: String(row.id),
+    name,
+    handle: primaryAccount?.handle ?? formatAccountLabel(row.primary_profile_url, "Website"),
+    platform: primaryAccount?.platform ?? "Other/Personal Website",
+    accounts: orderedAccounts,
+    profileUrl: row.primary_profile_url,
+    coverImage: `/Images/Social_Media/creator-${row.id}.jpg`,
+    focus: row.content_focus,
+    description: row.channel_bio,
+  };
+}
+
+function urlsMatch(firstValue, secondValue) {
+  try {
+    const normalize = (value) => {
+      const url = new URL(value);
+      return `${url.protocol}//${url.hostname.toLowerCase()}${url.pathname.replace(/\/+$/, "")}${url.search}`;
+    };
+    return normalize(firstValue) === normalize(secondValue);
+  } catch {
+    return firstValue === secondValue;
   }
+}
 
-  return createdListing.id;
+function formatAccountLabel(value, platform) {
+  if (!value) return "";
+
+  try {
+    const url = new URL(value);
+    const path = decodeURIComponent(url.pathname).replace(/^\/+|\/+$/g, "");
+    if (path && !["Podcast", "Other/Personal Website", "Website"].includes(platform)) {
+      return `@${path.split("/").filter(Boolean).at(-1).replace(/^@/, "")}`;
+    }
+    return url.hostname.replace(/^www\./, "");
+  } catch {
+    return value;
+  }
 }

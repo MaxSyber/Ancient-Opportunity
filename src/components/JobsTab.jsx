@@ -89,7 +89,7 @@ export default function JobsTab({
                 aria-describedby="post-job-tooltip"
               >
                 <Plus size={18} />
-                <span>Post a job</span>
+                <span>Post A Job</span>
               </button>
               <span className="sr-only" id="post-job-tooltip">
                 Jobs posted directly on Ancient Opportunity will appear above listings gathered from external sources.
@@ -235,7 +235,7 @@ export default function JobsTab({
                     title="View company website"
                     aria-describedby="view-company-tooltip"
                   >
-                    <ExternalLink size={18} />View company website
+                    <ExternalLink size={18} />View Company Website
                   </a>
                 )}
                 {selectedJob.employer.website && <span className="sr-only" id="view-company-tooltip">View the hiring company website</span>}
@@ -410,7 +410,7 @@ function JobPostingForm({ onCancel }) {
             )}
             {jobTitleError && <p className="field-error" role="alert">{jobTitleError}</p>}
           </fieldset>
-          <FormField label="Company website"><input name="company_website" type="url" placeholder="https://company.example" /></FormField>
+          <FormField label="Company Website"><input name="company_website" type="url" placeholder="https://company.example" /></FormField>
           <FormField label="State *"><input name="state" required placeholder="e.g. Arizona" /></FormField>
           <FormField label="Application URL (optional)"><input name="apply_url" type="url" placeholder="https://..." /></FormField>
           <FormField label="Employment type *">
@@ -453,7 +453,7 @@ function JobPostingForm({ onCancel }) {
         </div>
         <div className="job-form-actions">
           <button className="secondary-action" type="button" onClick={onCancel} disabled={isSubmitting}>Cancel</button>
-          <button className="influencer-submit" type="submit" disabled={isSubmitting}><Plus size={18} />{isSubmitting ? "Submitting..." : "Submit listing"}</button>
+          <button className="influencer-submit" type="submit" disabled={isSubmitting}><Plus size={18} />{isSubmitting ? "Submitting..." : "Submit Listing"}</button>
         </div>
         {submissionError && <p className="field-error" role="alert">{submissionError}</p>}
         {submissionSuccess && <p className="submission-success" role="status">{submissionSuccess}</p>}

@@ -71,7 +71,7 @@ export default function FieldSchoolsTab() {
         ) : (
           <button className="post-job-button" type="button" onClick={() => setShowForm(true)}>
             <Plus size={18} />
-            List a field school
+            List A Field School
           </button>
         )}
       </div>
@@ -301,8 +301,8 @@ function FieldSchoolForm({ onCancel }) {
         <FormField label="Location *"><input name="location" required placeholder="City, State or Country" /></FormField>
         <FormField label="Cost (USD)"><input name="cost" type="number" inputMode="decimal" min="0" step="0.01" placeholder="2500" /></FormField>
         <div className="field-school-date-fields form-field-wide">
-          <FormField label="Start date *"><input name="startDate" type="date" required /></FormField>
-          <FormField label="End date *"><input name="endDate" type="date" required /></FormField>
+          <FormField label="Start Date *"><input name="startDate" type="date" required /></FormField>
+          <FormField label="End Date *"><input name="endDate" type="date" required /></FormField>
           <FormField label="Application deadline"><input name="applicationDeadline" type="date" /></FormField>
         </div>
         <fieldset className="job-title-field form-field-wide">
@@ -317,18 +317,18 @@ function FieldSchoolForm({ onCancel }) {
           </div>
           {seasonError && <p className="field-error" role="alert">{seasonError}</p>}
         </fieldset>
-        <FormField label="Format / credits"><input name="format" placeholder="4 weeks · 6 credits" /></FormField>
-        <FormField label="Methods taught" hint="Separate methods with commas."><input name="methods" placeholder="Survey, excavation, GIS, artifact analysis" /></FormField>
-        <FormField label="Program description *" wide><textarea name="description" required rows="5" placeholder="Describe the site, training, eligibility, housing, and learning goals." /></FormField>
+        <FormField label="Format / Credits"><input name="format" placeholder="4 weeks · 6 credits" /></FormField>
+        <FormField label="Methods Taught" hint="Separate methods with commas."><input name="methods" placeholder="Survey, excavation, GIS, artifact analysis" /></FormField>
+        <FormField label="Program Description *" wide><textarea name="description" required rows="5" placeholder="Describe the site, training, eligibility, housing, and learning goals." /></FormField>
         <FormField
-          label="Program website *"
+          label="Program Website *"
           wide
           hint="Include the full website address. Example: https://www.example.com/field-school — not: www.example.com/field-school"
         >
           <input name="website" type="url" required placeholder="https://www.example.com/field-school" />
         </FormField>
         <FormField
-          label="Contact email *"
+          label="Contact Email *"
           wide
           hint="This email will not be shared publicly and will only be used to contact you if there is an issue with your field school posting."
         >
@@ -358,7 +358,7 @@ function FieldSchoolForm({ onCancel }) {
       <div className="job-form-actions">
         <button className="secondary-action" type="button" onClick={onCancel} disabled={isSubmitting}>Cancel</button>
         <button className="influencer-submit" type="submit" disabled={isSubmitting}>
-          <Plus size={18} />{isSubmitting ? "Submitting..." : "Submit field school"}
+          <Plus size={18} />{isSubmitting ? "Submitting..." : "Submit Field School"}
         </button>
       </div>
       {submissionError && <p className="field-error" role="alert">{submissionError}</p>}

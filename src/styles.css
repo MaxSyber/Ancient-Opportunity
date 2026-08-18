@@ -77,6 +77,24 @@ button {
   min-width: 0;
 }
 
+.alpha-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  min-height: 26px;
+  padding: 0 10px;
+  border: 1px solid #f4d889;
+  border-radius: 999px;
+  background: #e6b451;
+  color: #17201d;
+  box-shadow: 0 6px 16px rgba(17, 32, 29, 0.2);
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 
 
 .topbar-tabs {
@@ -1367,40 +1385,19 @@ h1 {
   outline: none;
 }
 
-.creator-platform,
 .creator-link {
   display: flex;
   align-items: center;
-}
-
-.creator-avatar {
-  display: grid;
-  place-items: center;
-  width: 58px;
-  height: 58px;
-  border-radius: 50%;
-  background: #1f6e5b;
-  color: #fff;
-  font-size: 1.05rem;
-  font-weight: 900;
-}
-
-.creator-platform {
-  width: fit-content;
-  gap: 6px;
-  padding: 6px 9px;
-  border-radius: 999px;
-  background: #e7f0ec;
-  color: #1f6e5b;
-  font-size: 0.78rem;
-  font-weight: 850;
 }
 
 .creator-cover-placeholder {
   position: relative;
   display: grid;
   place-items: center;
-  min-height: 142px;
+  width: 50%;
+  min-height: 0;
+  margin-inline: auto;
+  aspect-ratio: 1 / 1;
   overflow: hidden;
   border: 1px dashed #bdb19f;
   border-radius: 8px;
@@ -1411,9 +1408,18 @@ h1 {
 }
 
 .creator-cover-placeholder > span {
+  grid-area: 1 / 1;
   font-size: 0.7rem;
   font-weight: 800;
   text-transform: uppercase;
+}
+
+.creator-cover-placeholder > img {
+  z-index: 1;
+  grid-area: 1 / 1;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .creator-card-name {
@@ -1425,7 +1431,6 @@ h1 {
   font-size: 1.16rem;
 }
 
-.creator-handle,
 .creator-description {
   margin: 0;
   color: #596860;
@@ -1436,6 +1441,10 @@ h1 {
   flex-wrap: wrap;
   justify-content: center;
   gap: 7px;
+}
+
+.creator-detail-account-buttons {
+  justify-content: flex-start;
 }
 
 .creator-account-button {
@@ -1450,6 +1459,7 @@ h1 {
   color: #34423b;
   font-size: 0.78rem;
   font-weight: 800;
+  text-decoration: none;
 }
 
 .creator-account-button:hover,
@@ -1459,15 +1469,27 @@ h1 {
   color: #1f6e5b;
 }
 
-.creator-handle {
-  margin-top: 4px;
-  font-size: 0.88rem;
-  font-weight: 750;
+.creator-account-button-primary,
+.creator-account-button-primary:hover,
+.creator-account-button-primary:focus-visible {
+  border-color: #b77a0b;
+  background: #e9bd50;
+  color: #4b3100;
 }
 
 .creator-description {
   flex: 1;
   line-height: 1.55;
+}
+
+.creator-bio-preview {
+  font-size: 0.88rem;
+  text-align: left;
+}
+
+.creator-focus-tags {
+  justify-content: center;
+  margin-top: auto;
 }
 
 .creator-link {
@@ -1494,31 +1516,22 @@ h1 {
 }
 
 .creator-detail-banner {
+  position: relative;
   display: grid;
   place-items: center;
   min-height: 190px;
+  overflow: hidden;
   background:
     linear-gradient(135deg, rgba(31, 110, 91, 0.9), rgba(197, 126, 54, 0.62)),
     url("/src/assets/archaeology-banner.png") center / cover;
 }
 
-.creator-detail-avatar {
-  width: 96px;
-  height: 96px;
-  border: 4px solid rgba(255, 255, 255, 0.8);
-  background: #fffaf1;
-  color: #1f6e5b;
-  font-size: 1.65rem;
-  box-shadow: 0 14px 30px rgba(17, 32, 29, 0.28);
-}
-
-.creator-detail-platform {
-  width: fit-content;
-}
-
-.creator-detail-handle {
-  margin-top: 6px !important;
-  font-weight: 750;
+.creator-detail-cover-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .creator-detail-section {
@@ -1852,6 +1865,11 @@ h1 {
   background: #1f6e5b;
   color: #fff;
   font-weight: 850;
+}
+
+.influencer-submit:disabled {
+  cursor: wait;
+  opacity: 0.65;
 }
 
 .submission-success {
@@ -2255,6 +2273,14 @@ h1 {
   color: #9de0c8;
 }
 
+.dark-mode .creator-account-button-primary,
+.dark-mode .creator-account-button-primary:hover,
+.dark-mode .creator-account-button-primary:focus-visible {
+  border-color: #f1c75b;
+  background: #d9aa35;
+  color: #211600;
+}
+
 .dark-mode .job-card-label {
   color: #8fa099;
 }
@@ -2272,7 +2298,6 @@ h1 {
 .dark-mode .conference-location,
 .dark-mode .conference-description,
 .dark-mode .conferences-heading .eyebrow,
-.dark-mode .creator-handle,
 .dark-mode .creator-description {
   color: #aab8b1;
 }
@@ -2444,16 +2469,9 @@ h1 {
   color: #07120f;
 }
 
-.dark-mode .creator-link,
-.dark-mode .creator-avatar {
+.dark-mode .creator-link {
   background: #4fb391;
   color: #07120f;
-}
-
-.dark-mode .creator-detail-avatar {
-  border-color: rgba(255, 255, 255, 0.65);
-  background: #18221f;
-  color: #9de0c8;
 }
 .dark-mode .section-tab,
 .dark-mode .placeholder-panel {
