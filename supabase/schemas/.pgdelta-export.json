@@ -1,0 +1,28 @@
+{
+  "formatVersion": 1,
+  "redactSecrets": true,
+  "scope": "database",
+  "profile": "supabase",
+  "defaultOwner": "postgres",
+  "files": [
+    "_cluster/event_triggers.sql",
+    "_cluster/extensions/pgcrypto.sql",
+    "_cluster/extensions/uuid-ossp.sql",
+    "public/default_privileges.sql",
+    "public/functions/get_approved_social_listings.sql",
+    "public/functions/get_ranked_jobs.sql",
+    "public/functions/rls_auto_enable.sql",
+    "public/functions/submit_field_school.sql",
+    "public/functions/submit_job.sql",
+    "public/functions/submit_social_listing.sql",
+    "public/schema.sql",
+    "public/tables/field_school_contacts.sql",
+    "public/tables/field_schools.sql",
+    "public/tables/job_contacts.sql",
+    "public/tables/job_listings.sql",
+    "public/tables/social_contacts.sql",
+    "public/tables/social_listings.sql",
+    "public/tables/submission_email_events.sql",
+    "public/types/job_status.sql"
+  ]
+}
