@@ -105,6 +105,11 @@ export default function App() {
     setQuery("");
   };
 
+  const openSection = (tab) => {
+    setActiveTab(tab);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
     <main className={darkMode ? "app-shell dark-mode" : "app-shell"}>
       <section className="top-band">
@@ -139,6 +144,43 @@ export default function App() {
       {activeTab === "Conferences" && <ConferencesTab />}
       {activeTab === "Social Media Influencers" && <InfluencersTab />}
       {activeTab === "Field Equipment Stores" && <FieldEquipmentStoresTab />}
+
+      <footer className="site-footer">
+        <div className="footer-content">
+          <div className="footer-brand">
+            <div className="footer-brand-heading">
+              <h2>Ancient Opportunity</h2>
+              <span className="footer-alpha-badge">Alpha</span>
+            </div>
+            <p>Connecting archaeology professionals, students, organizations, and creators with opportunities across the field.</p>
+          </div>
+
+          <nav className="footer-navigation" aria-label="Footer navigation">
+            <h3>Explore</h3>
+            <div>
+              {tabs.map((tab) => (
+                <button type="button" key={tab} onClick={() => openSection(tab)}>
+                  {tab === "Social Media Influencers" ? "Creators" : tab}
+                </button>
+              ))}
+            </div>
+          </nav>
+
+          <div className="footer-purpose">
+            <h3>Our purpose</h3>
+            <p>Making archaeology opportunities easier to discover and share in one community-focused place.</p>
+            <p className="footer-contact">
+              Questions or comments? Email us at{" "}
+              <a href="mailto:ancientopportunity@gmail.com">ancientopportuinty@gmail.com</a>
+            </p>
+          </div>
+        </div>
+
+        <div className="footer-bottom">
+          <p>© {new Date().getFullYear()} Ancient Opportunity</p>
+          <p>Always verify listing details with the original organization before applying.</p>
+        </div>
+      </footer>
     </main>
   );
 }

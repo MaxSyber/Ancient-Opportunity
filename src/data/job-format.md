@@ -13,7 +13,9 @@ Every importer should convert its source data into this shape before the listing
   title: "Job title",
   employer: {
     name: "Hiring organization",
-    type: "Federal agency | Private CRM firm | University | Museum | Unknown"
+    type: "Federal agency | Private CRM firm | University | Museum | Unknown",
+    website: "https://company.example",
+    logoUrl: "/Images/Company_Logos/hiring-organization.png"
   },
   location: {
     display: "Human-readable location",
@@ -59,3 +61,4 @@ Importer notes:
 - ShovelBums should use source URLs and short summaries unless explicit reuse rights are clear.
 - Keep full raw source payloads out of the frontend. If needed later, store them separately on the backend for debugging/import audits.
 - The frontend should only depend on this normalized shape, not on USAJOBS or ShovelBums field names.
+- Store local company logos as PNG files in `public/Images/Company_Logos`. The frontend derives each filename from the company name, using lowercase letters and hyphens in place of spaces or punctuation.

@@ -25,6 +25,7 @@ export function normalizeJobRow(row) {
   const urls = objectValue(row.urls);
   const postedDate = dates.postedDate ?? row.posted_date ?? row.created_at?.slice(0, 10) ?? null;
   const sourcePosting = urls.sourcePosting ?? row.source_posting_url ?? row.posting_url ?? row.apply_url ?? row.url ?? "";
+  const employerName = employer.name ?? row.employer_name ?? row.organization ?? row.company ?? "Organization not listed";
   const locationDisplay = location.display
     ?? row.location_display
     ?? (typeof row.location === "string" ? row.location : null)
@@ -48,9 +49,10 @@ export function normalizeJobRow(row) {
     },
     title: row.posting_title ?? row.title ?? "Untitled archaeology position",
     employer: {
-      name: employer.name ?? row.employer_name ?? row.organization ?? row.company ?? "Organization not listed",
+      name: employerName,
       type: employer.type ?? row.employer_type ?? "Unknown",
       website: employer.website ?? row.company_website ?? "",
+      logoUrl: companyLogoUrl(employerName),
     },
     location: {
       display: locationDisplay,
@@ -84,10 +86,23 @@ export function normalizeJobRow(row) {
     },
     urls: {
       sourcePosting,
-      apply: urls.apply ?? row.apply_url ?? sourcePosting,
+      apply: urls.apply ?? row.apply_url ?? "",
     },
     savedByDefault: row.savedByDefault ?? row.saved_by_default ?? false,
   };
+}
+
+function companyLogoUrl(companyName) {
+  const filename = String(companyName ?? "")
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/&/g, " and ")
+    .replace(/[’']/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  return filename ? `/Images/Company_Logos/${filename}.png` : "";
 }
 
 function objectValue(value) {

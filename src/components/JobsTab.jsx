@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Bookmark,
   BriefcaseBusiness,
   Building2,
   CalendarDays,
+  ChevronLeft,
+  ChevronRight,
   ExternalLink,
   MapPin,
   Plus,
@@ -12,6 +14,8 @@ import {
 } from "lucide-react";
 import { jobTitles, jobTypes } from "../data/jobs";
 import { supabase } from "../supabaseClient";
+
+const JOBS_PER_PAGE = 25;
 
 export default function JobsTab({
   filteredJobs,
@@ -32,6 +36,29 @@ export default function JobsTab({
 }) {
   const [showJobForm, setShowJobForm] = useState(false);
   const [showJobDetails, setShowJobDetails] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const jobsColumnRef = useRef(null);
+
+  const totalPages = Math.max(1, Math.ceil(filteredJobs.length / JOBS_PER_PAGE));
+  const activePage = Math.min(currentPage, totalPages);
+  const pageStart = (activePage - 1) * JOBS_PER_PAGE;
+  const pageJobs = filteredJobs.slice(pageStart, pageStart + JOBS_PER_PAGE);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [query, datePosted, selectedJobTitles, type]);
+
+  useEffect(() => {
+    setCurrentPage((page) => Math.min(page, totalPages));
+  }, [totalPages]);
+
+  const changePage = (page) => {
+    setCurrentPage(page);
+    setShowJobDetails(false);
+    window.requestAnimationFrame(() => {
+      jobsColumnRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  };
 
   useEffect(() => {
     if (!showJobDetails) return undefined;
@@ -74,7 +101,7 @@ export default function JobsTab({
       {showJobForm && <JobPostingForm onCancel={() => setShowJobForm(false)} />}
 
       <section className="dashboard-grid">
-        <section className="jobs-column" aria-label="Job listings">
+        <section className="jobs-column" aria-label="Job listings" ref={jobsColumnRef}>
           <div className="list-heading">
             <div>
               <p className="eyebrow">Open roles</p>
@@ -98,7 +125,7 @@ export default function JobsTab({
           </div>
 
           <div className="job-list">
-            {filteredJobs.map((job) => (
+            {pageJobs.map((job) => (
               <article
                 className={selectedJob?.id === job.id ? "job-card selected" : "job-card"}
                 key={job.id}
@@ -116,9 +143,7 @@ export default function JobsTab({
                   }
                 }}
               >
-                <div className="company-logo-placeholder" aria-label={`${job.employer.name} logo placeholder`}>
-                  <Building2 size={30} aria-hidden="true" />
-                </div>
+                <CompanyLogo job={job} iconSize={30} />
                 <div className="job-card-content">
                   <div className="job-card-top">
                     <div>
@@ -190,6 +215,33 @@ export default function JobsTab({
                 <p>Try widening the date, job title, or search text.</p>
               </div>
             )}
+
+            {!jobsLoading && !jobsError && totalPages > 1 && (
+              <nav className="jobs-pagination" aria-label="Job listing pages">
+                <button
+                  className="pagination-arrow"
+                  type="button"
+                  aria-label="Previous page"
+                  disabled={activePage === 1}
+                  onClick={() => changePage(activePage - 1)}
+                >
+                  <ChevronLeft size={20} aria-hidden="true" />
+                </button>
+                <p>
+                  <span>Showing {pageStart + 1}–{Math.min(pageStart + JOBS_PER_PAGE, filteredJobs.length)} of {filteredJobs.length}</span>
+                  <strong>Page {activePage} of {totalPages}</strong>
+                </p>
+                <button
+                  className="pagination-arrow"
+                  type="button"
+                  aria-label="Next page"
+                  disabled={activePage === totalPages}
+                  onClick={() => changePage(activePage + 1)}
+                >
+                  <ChevronRight size={20} aria-hidden="true" />
+                </button>
+              </nav>
+            )}
           </div>
         </section>
 
@@ -208,9 +260,7 @@ export default function JobsTab({
             <div className="detail-image" aria-hidden="true" />
             <div className="detail-content">
               <div className="detail-company-heading">
-                <div className="company-logo-placeholder detail-company-logo" aria-label={`${selectedJob.employer.name} logo placeholder`}>
-                  <Building2 size={24} aria-hidden="true" />
-                </div>
+                <CompanyLogo job={selectedJob} iconSize={24} detail />
                 <span className="source-badge">{selectedJob.employer.name}</span>
               </div>
               <h2 id="job-detail-heading">{selectedJob.title}</h2>
@@ -239,6 +289,17 @@ export default function JobsTab({
                   </a>
                 )}
                 {selectedJob.employer.website && <span className="sr-only" id="view-company-tooltip">View the hiring company website</span>}
+                {selectedJob.urls.apply && (
+                  <a
+                    className="primary-action"
+                    href={selectedJob.urls.apply}
+                    target="_blank"
+                    rel="noreferrer"
+                    title="Open the job application"
+                  >
+                    <ExternalLink size={18} />Apply
+                  </a>
+                )}
                 <button className={savedIds.has(selectedJob.id) ? "secondary-action saved" : "secondary-action"} type="button" onClick={() => toggleSaved(selectedJob.id)}><Bookmark size={18} />{savedIds.has(selectedJob.id) ? "Saved" : "Save"}</button>
               </div>
               <div className="freshness-note"><CalendarDays size={17} /><span>Posted {selectedJob.dates.postedLabel}</span></div>
@@ -247,6 +308,42 @@ export default function JobsTab({
         </div>
       )}
     </>
+  );
+}
+
+function CompanyLogo({ job, iconSize, detail = false }) {
+  const [imageFailed, setImageFailed] = useState(false);
+  const logoUrl = job.employer.logoUrl;
+
+  useEffect(() => {
+    setImageFailed(false);
+  }, [logoUrl]);
+
+  const hasLogo = logoUrl && !imageFailed;
+  const className = [
+    "company-logo-placeholder",
+    detail ? "detail-company-logo" : "",
+    hasLogo ? "has-logo" : "",
+  ].filter(Boolean).join(" ");
+
+  return (
+    <div className={className}>
+      {hasLogo ? (
+        <img
+          className="company-logo-image"
+          src={logoUrl}
+          alt={`${job.employer.name} logo`}
+          decoding="async"
+          onError={() => setImageFailed(true)}
+        />
+      ) : (
+        <Building2
+          size={iconSize}
+          role="img"
+          aria-label={`${job.employer.name} logo unavailable`}
+        />
+      )}
+    </div>
   );
 }
 
