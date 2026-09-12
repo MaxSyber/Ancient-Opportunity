@@ -100,14 +100,15 @@ export default function JobsTab({
 
       {showJobForm && <JobPostingForm onCancel={() => setShowJobForm(false)} />}
 
-      <section className="dashboard-grid">
-        <section className="jobs-column" aria-label="Job listings" ref={jobsColumnRef}>
+      <div className="dashboard-grid">
+        <section className="jobs-column" aria-labelledby="archaeology-jobs-heading" ref={jobsColumnRef}>
           <div className="list-heading">
             <div>
               <p className="eyebrow">Open roles</p>
-              <h2>{filteredJobs.length} listings found</h2>
+              <h2 id="archaeology-jobs-heading"><span className="sr-only">Archaeology Jobs: </span>{filteredJobs.length} listings found</h2>
             </div>
             <div className="list-actions">
+              <span className="beta-posting-badge">Free Job Posting During the Open Beta</span>
               <button
                 className="post-job-button"
                 type="button"
@@ -129,20 +130,16 @@ export default function JobsTab({
               <article
                 className={selectedJob?.id === job.id ? "job-card selected" : "job-card"}
                 key={job.id}
-                role="button"
-                tabIndex="0"
-                onClick={() => {
-                  setSelectedId(job.id);
-                  setShowJobDetails(true);
-                }}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter" || event.key === " ") {
-                    event.preventDefault();
+              >
+                <button
+                  className="card-open-button"
+                  type="button"
+                  aria-label={`View details for ${job.title} at ${job.employer.name}`}
+                  onClick={() => {
                     setSelectedId(job.id);
                     setShowJobDetails(true);
-                  }
-                }}
-              >
+                  }}
+                />
                 <CompanyLogo job={job} iconSize={30} />
                 <div className="job-card-content">
                   <div className="job-card-top">
@@ -245,7 +242,7 @@ export default function JobsTab({
           </div>
         </section>
 
-      </section>
+      </div>
 
       {showJobDetails && selectedJob && (
         <div className="job-detail-modal" role="presentation" onMouseDown={() => setShowJobDetails(false)}>

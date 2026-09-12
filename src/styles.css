@@ -587,6 +587,21 @@ h1 {
   flex-wrap: wrap;
 }
 
+.beta-posting-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 6px 10px;
+  border: 1px solid #d5a841;
+  border-radius: 999px;
+  background: #f6e7b0;
+  color: #5d4100;
+  font-size: 0.76rem;
+  font-weight: 800;
+  line-height: 1.25;
+  text-align: center;
+}
+
 .post-job-button {
   min-height: 42px;
   padding: 0 14px;
@@ -668,6 +683,22 @@ h1 {
     box-shadow 160ms ease;
 }
 
+.card-open-button {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+}
+
+.card-open-button:focus-visible {
+  outline: 3px solid #1f6e5b;
+  outline-offset: 3px;
+}
+
 .job-card:hover,
 .job-card.selected {
   border-color: #1f6e5b;
@@ -675,8 +706,7 @@ h1 {
   transform: translateY(-2px);
 }
 
-.job-card:hover,
-.job-card:focus-visible {
+.job-card:hover {
   outline: 3px solid #1f6e5b;
   outline-offset: 3px;
 }
@@ -721,6 +751,8 @@ h1 {
 }
 
 .job-card-save {
+  position: relative;
+  z-index: 3;
   display: flex;
   justify-content: flex-end;
 }
@@ -1279,6 +1311,7 @@ h1 {
 }
 
 .field-school-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 11px;
@@ -1291,8 +1324,7 @@ h1 {
   transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
 }
 
-.field-school-card:hover,
-.field-school-card:focus-visible {
+.field-school-card:hover {
   border-color: #a99a7f;
   box-shadow: 0 14px 28px rgba(45, 38, 28, 0.12);
   transform: translateY(-2px);
@@ -1383,6 +1415,8 @@ h1 {
 }
 
 .field-school-card .conference-website {
+  position: relative;
+  z-index: 3;
   margin-top: auto;
 }
 
@@ -1561,6 +1595,7 @@ h1 {
 }
 
 .creator-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 11px;
@@ -1574,8 +1609,7 @@ h1 {
   transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
 }
 
-.creator-card:hover,
-.creator-card:focus-visible {
+.creator-card:hover {
   border-color: #a99a7f;
   box-shadow: 0 14px 28px rgba(45, 38, 28, 0.12);
   transform: translateY(-2px);
@@ -1634,6 +1668,8 @@ h1 {
 }
 
 .creator-account-buttons {
+  position: relative;
+  z-index: 3;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -2684,6 +2720,12 @@ h1 {
 .dark-mode .job-form-actions .influencer-submit {
   background: #4fb391;
   color: #07120f;
+}
+
+.dark-mode .beta-posting-badge {
+  border-color: #d5a841;
+  background: #5a4518;
+  color: #ffe8a3;
 }
 
 .dark-mode .job-form-heading h2 {

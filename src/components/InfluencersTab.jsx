@@ -205,9 +205,10 @@ function PlatformMark({ platform }) {
 function CreatorCard({ creator, onSelect }) {
   const focusTags = getContentFocusTags(creator.focus);
   return (
-    <article className="creator-card" role="button" tabIndex="0" onClick={onSelect} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); onSelect(); } }}>
+    <article className="creator-card">
+      <button className="card-open-button" type="button" aria-label={`View details for ${creator.name}`} onClick={onSelect} />
       <div className="creator-cover-placeholder">
-        <img src={creator.coverImage} alt={`${creator.name} cover`} onError={(event) => { event.currentTarget.hidden = true; }} />
+        <img src={creator.coverImage} alt={`${creator.name}, archaeology creator`} onError={(event) => { event.currentTarget.hidden = true; }} />
         <span>Cover image</span>
       </div>
       <div className="creator-card-name"><h3>{creator.name}</h3></div>

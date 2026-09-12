@@ -2,7 +2,7 @@
 
 Ancient Opportunity is an archaeology-focused opportunity board for jobs, field schools, conferences, professional creators, and field resources.
 
-The project is currently in **Alpha** and is preparing for its first public deployment.
+The project is preparing for its public **Open Beta** launch.
 
 ## What the site offers
 
@@ -256,11 +256,12 @@ The first deployment without `--prod` creates a Preview deployment. The producti
 
 ## Current roadmap
 
-- Deploy the public Alpha release.
+- Launch and monitor the public Open Beta release.
 - Populate the field-equipment store directory.
 - Continue expanding job, field-school, conference, and creator coverage.
 - Add persistent user accounts and saved listings if the project grows beyond session-based saving.
 
 ## Status
 
-Ancient Opportunity is an independent Alpha project. Features and database structures may change as the first public release is tested and refined.
+Ancient Opportunity is an independent Open Beta project. Features and database structures may change as the beta is tested and refined.
+

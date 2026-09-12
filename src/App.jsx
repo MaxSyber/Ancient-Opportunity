@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Bookmark, Moon, Sun } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
 import JobsTab from "./components/JobsTab";
 import FieldSchoolsTab from "./components/FieldSchoolsTab";
 import ConferencesTab from "./components/ConferencesTab";
@@ -9,6 +9,13 @@ import { normalizeJobRow } from "./data/jobs";
 import { supabase } from "./supabaseClient";
 
 const tabs = ["Jobs", "Field Schools", "Conferences", "Social Media Influencers", "Field Equipment Stores"];
+const tabLabels = {
+  Jobs: "Archaeology Jobs",
+  "Field Schools": "Archaeology Field Schools",
+  Conferences: "Archaeology Conferences",
+  "Social Media Influencers": "Archaeology Creators",
+  "Field Equipment Stores": "Archaeology Field Equipment Stores",
+};
 
 export default function App() {
   const [jobListings, setJobListings] = useState([]);
@@ -53,7 +60,6 @@ export default function App() {
       }
 
       const normalizedJobs = (data ?? []).map(normalizeJobRow);
-      console.log("Jobs received from Supabase:", data);
       setJobListings(normalizedJobs);
       setSelectedId(normalizedJobs[0]?.id ?? null);
       setSavedIds(new Set(normalizedJobs.filter((job) => job.savedByDefault).map((job) => job.id)));
@@ -111,15 +117,14 @@ export default function App() {
   };
 
   return (
-    <main className={darkMode ? "app-shell dark-mode" : "app-shell"}>
-      <section className="top-band">
+    <div className={darkMode ? "app-shell dark-mode" : "app-shell"}>
+      <header className="top-band">
         <div className="hero-panel">
-          <div className="brand-lockup"><h1>Ancient Opportunity</h1><span className="alpha-badge">Alpha</span></div>
+          <div className="brand-lockup"><h1>Ancient Opportunity<span className="sr-only"> — Archaeology Jobs and Field Schools</span></h1><span className="alpha-badge">Beta</span></div>
           <div className="nav-actions">
             <button className="icon-button" type="button" aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"} title={darkMode ? "Switch to light mode" : "Switch to dark mode"} aria-pressed={darkMode} onClick={() => setDarkMode((current) => !current)}>
               {darkMode ? <Sun size={20} /> : <Moon size={20} />}
             </button>
-            <button className="icon-button" type="button" aria-label="Open saved jobs"><Bookmark size={20} /><span>{savedIds.size}</span></button>
           </div>
           <nav className="tabs-band" aria-label="Ancient Opportunity sections">
             <div className="topbar-tabs">
@@ -131,26 +136,28 @@ export default function App() {
                   aria-pressed={activeTab === tab}
                   onClick={() => setActiveTab(tab)}
                 >
-                  {tab}
+                  {tabLabels[tab]}
                 </button>
               ))}
             </div>
           </nav>
         </div>
-      </section>
+      </header>
 
-      {activeTab === "Jobs" && <JobsTab filteredJobs={filteredJobs} selectedJob={selectedJob} setSelectedId={setSelectedId} savedIds={savedIds} toggleSaved={toggleSaved} query={query} setQuery={setQuery} datePosted={datePosted} setDatePosted={setDatePosted} selectedJobTitles={selectedJobTitles} setSelectedJobTitles={setSelectedJobTitles} type={type} setType={setType} addJob={addJob} jobsLoading={jobsLoading} jobsError={jobsError} />}
-      {activeTab === "Field Schools" && <FieldSchoolsTab />}
-      {activeTab === "Conferences" && <ConferencesTab />}
-      {activeTab === "Social Media Influencers" && <InfluencersTab />}
-      {activeTab === "Field Equipment Stores" && <FieldEquipmentStoresTab />}
+      <main>
+        {activeTab === "Jobs" && <JobsTab filteredJobs={filteredJobs} selectedJob={selectedJob} setSelectedId={setSelectedId} savedIds={savedIds} toggleSaved={toggleSaved} query={query} setQuery={setQuery} datePosted={datePosted} setDatePosted={setDatePosted} selectedJobTitles={selectedJobTitles} setSelectedJobTitles={setSelectedJobTitles} type={type} setType={setType} addJob={addJob} jobsLoading={jobsLoading} jobsError={jobsError} />}
+        {activeTab === "Field Schools" && <FieldSchoolsTab />}
+        {activeTab === "Conferences" && <ConferencesTab />}
+        {activeTab === "Social Media Influencers" && <InfluencersTab />}
+        {activeTab === "Field Equipment Stores" && <FieldEquipmentStoresTab />}
+      </main>
 
       <footer className="site-footer">
         <div className="footer-content">
           <div className="footer-brand">
             <div className="footer-brand-heading">
               <h2>Ancient Opportunity</h2>
-              <span className="footer-alpha-badge">Alpha</span>
+              <span className="footer-alpha-badge">Beta</span>
             </div>
             <p>Connecting archaeology professionals, students, organizations, and creators with opportunities across the field.</p>
           </div>
@@ -160,7 +167,7 @@ export default function App() {
             <div>
               {tabs.map((tab) => (
                 <button type="button" key={tab} onClick={() => openSection(tab)}>
-                  {tab === "Social Media Influencers" ? "Creators" : tab}
+                  {tabLabels[tab]}
                 </button>
               ))}
             </div>
@@ -171,7 +178,7 @@ export default function App() {
             <p>Making archaeology opportunities easier to discover and share in one community-focused place.</p>
             <p className="footer-contact">
               Questions or comments? Email us at{" "}
-              <a href="mailto:ancientopportunity@gmail.com">ancientopportuinty@gmail.com</a>
+              <a href="mailto:ancientopportunity@gmail.com">ancientopportunity@gmail.com</a>
             </p>
           </div>
         </div>
@@ -181,6 +188,6 @@ export default function App() {
           <p>Always verify listing details with the original organization before applying.</p>
         </div>
       </footer>
-    </main>
+    </div>
   );
 }

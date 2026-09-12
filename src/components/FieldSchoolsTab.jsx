@@ -83,16 +83,13 @@ export default function FieldSchoolsTab() {
           <article
             className="field-school-card"
             key={fieldSchool.id}
-            role="button"
-            tabIndex="0"
-            onClick={() => setSelectedFieldSchool(fieldSchool)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter" || event.key === " ") {
-                event.preventDefault();
-                setSelectedFieldSchool(fieldSchool);
-              }
-            }}
           >
+            <button
+              className="card-open-button"
+              type="button"
+              aria-label={`View details for ${fieldSchool.name}`}
+              onClick={() => setSelectedFieldSchool(fieldSchool)}
+            />
             <div className="field-school-card-top">
               <span className="source-badge">Field School</span>
               <GraduationCap size={22} aria-hidden="true" />
