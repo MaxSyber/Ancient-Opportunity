@@ -114,7 +114,7 @@ export default function InfluencersTab() {
         {showForm ? (
           <button className="form-close" type="button" onClick={() => setShowForm(false)} aria-label="Close creator recommendation form" title="Close form">×</button>
         ) : (
-          <button className="post-job-button" type="button" onClick={() => { setShowForm(true); setSubmittedName(""); setSubmissionError(""); }}><Plus size={18} />Recommend A Creator</button>
+          <button className="post-job-button" type="button" onClick={() => { setShowForm(true); setSubmittedName(""); setSubmissionError(""); }}><Plus size={18} />Suggest a Creator</button>
         )}
       </div>
 
