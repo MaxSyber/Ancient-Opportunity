@@ -47,6 +47,7 @@ export default function App() {
         ({ data, error } = await supabase
           .from("job_listings")
           .select("*")
+          .eq("status", "approved")
           .order("posted_date", { ascending: false, nullsFirst: false }));
       }
 

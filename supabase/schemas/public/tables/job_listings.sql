@@ -25,7 +25,7 @@ alter table "public"."job_listings"
 create policy "Allow public read access" on "public"."job_listings"
   for select
   to "anon"
-  using (true);
+  using (status = 'approved'::public.job_status);
 
 grant maintain, references, select, trigger, truncate on table "public"."job_listings" to "anon";
 

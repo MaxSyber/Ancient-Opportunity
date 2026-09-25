@@ -18,6 +18,9 @@ create or replace function public.get_ranked_jobs()
     job.id desc;
 $function$;
 
-grant execute on function "public"."get_ranked_jobs"() to "anon", "authenticated", "postgres";
+drop policy if exists "Allow public read access" on public.job_listings;
 
-revoke all on function "public"."get_ranked_jobs"() from public;
+create policy "Allow public read access" on public.job_listings
+  for select
+  to anon
+  using (status = 'approved'::public.job_status);
