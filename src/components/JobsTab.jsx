@@ -27,6 +27,9 @@ export default function JobsTab({
   setQuery,
   datePosted,
   setDatePosted,
+  selectedState,
+  setSelectedState,
+  stateOptions,
   selectedJobTitles,
   setSelectedJobTitles,
   type,
@@ -46,7 +49,7 @@ export default function JobsTab({
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [query, datePosted, selectedJobTitles, type]);
+  }, [query, datePosted, selectedState, selectedJobTitles, type]);
 
   useEffect(() => {
     setCurrentPage((page) => Math.min(page, totalPages));
@@ -77,7 +80,7 @@ export default function JobsTab({
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search title, site type, agency, GIS, collections..."
+            placeholder="Search title, state, company."
             aria-label="Search archaeology jobs"
           />
         </div>
@@ -88,6 +91,13 @@ export default function JobsTab({
           onChange={setDatePosted}
           options={["Any date", "Past 24 hrs", "Past 3 days", "Past week", "Past month"]}
         />
+        <SelectControl
+          icon={<MapPin size={18} />}
+          label="State"
+          value={selectedState}
+          onChange={setSelectedState}
+          options={stateOptions}
+        />
         <MultiSelectControl
           icon={<Star size={18} />}
           label="Job Titles"
@@ -95,7 +105,7 @@ export default function JobsTab({
           onChange={setSelectedJobTitles}
           options={jobTitles.slice(1)}
         />
-        <SelectControl icon={<BriefcaseBusiness size={18} />} label="Type" value={type} onChange={setType} options={jobTypes} />
+        <SelectControl icon={<BriefcaseBusiness size={18} />} label="Employment Type" value={type} onChange={setType} options={jobTypes} />
       </section>
 
       {showJobForm && <JobPostingForm onCancel={() => setShowJobForm(false)} />}
@@ -172,19 +182,6 @@ export default function JobsTab({
                       <strong>{job.dates.postedLabel}</strong>
                     </div>
                   </div>
-                </div>
-                <div className="job-card-save">
-                  <button
-                    className={savedIds.has(job.id) ? "save-button saved" : "save-button"}
-                    type="button"
-                    aria-label={savedIds.has(job.id) ? "Unsave job" : "Save job"}
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      toggleSaved(job.id);
-                    }}
-                  >
-                    <Bookmark size={17} />
-                  </button>
                 </div>
               </article>
             ))}

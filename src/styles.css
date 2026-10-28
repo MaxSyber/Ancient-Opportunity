@@ -42,15 +42,14 @@ button {
 
 .app-shell {
   min-height: 100vh;
-  background:
-    linear-gradient(180deg, rgba(17, 32, 29, 0.82), rgba(17, 32, 29, 0.62) 320px, transparent 321px),
-    #f5f2ec;
+  background: #f5f2ec;
 }
 
 .top-band {
   min-height: 0;
-  padding: 22px clamp(16px, 3vw, 42px) 28px;
+  padding: 18px clamp(16px, 3vw, 42px) 22px;
   color: #fff9ef;
+  background: linear-gradient(180deg, rgba(17, 32, 29, 0.82), rgba(17, 32, 29, 0.62));
 }
 
 .nav-bar,
@@ -73,8 +72,11 @@ button {
 .brand-lockup {
   display: flex;
   align-items: center;
+  width: 100%;
   gap: 14px;
   min-width: 0;
+  padding-right: 60px;
+  padding-left: calc(clamp(112px, 12vw, 144px) + 18px);
 }
 
 .alpha-badge {
@@ -187,13 +189,13 @@ h1 {
 
 .hero-panel {
   position: relative;
-  min-height: 190px;
+  min-height: 152px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 20px;
-  padding: 28px;
+  gap: 16px;
+  padding: 10px 28px 12px;
   border: 0;
   border-radius: 8px;
   background:
@@ -205,13 +207,13 @@ h1 {
 .hero-panel .tabs-band {
   width: 100%;
   margin-top: auto;
-  padding: 18px 0 0;
-  transform: translateY(10px);
+  padding: 14px 0 12px calc(clamp(112px, 12vw, 144px) + 18px);
+  transform: none;
 }
 
 .hero-panel .nav-actions {
   position: absolute;
-  top: 20px;
+  top: 16px;
   right: 20px;
 }
 
@@ -251,7 +253,7 @@ h1 {
 
 .controls-band {
   display: grid;
-  grid-template-columns: minmax(260px, 1.4fr) repeat(3, minmax(150px, 0.55fr));
+  grid-template-columns: minmax(260px, 1.4fr) repeat(4, minmax(150px, 0.55fr));
   gap: 12px;
   padding: 16px;
   margin-top: 14px;
@@ -672,10 +674,10 @@ h1 {
 .job-card {
   position: relative;
   display: grid;
-  grid-template-columns: 76px minmax(0, 1fr) 38px;
+  grid-template-columns: 76px minmax(0, 1fr);
   align-items: start;
   gap: 18px;
-  padding: 20px;
+  padding: 16px 20px;
   cursor: pointer;
   transition:
     transform 160ms ease,
@@ -747,19 +749,12 @@ h1 {
 .job-card-content {
   display: grid;
   min-width: 0;
-  gap: 10px;
-}
-
-.job-card-save {
-  position: relative;
-  z-index: 3;
-  display: flex;
-  justify-content: flex-end;
+  gap: 8px;
 }
 
 .job-card-label {
   display: block;
-  margin-bottom: 3px;
+  margin-bottom: 2px;
   color: #6a756e;
   font-size: 0.7rem;
   font-weight: 850;
@@ -770,13 +765,13 @@ h1 {
 .job-card-facts {
   display: grid;
   grid-template-columns: minmax(130px, 1fr) minmax(125px, 0.9fr) minmax(130px, 0.85fr) minmax(115px, 0.7fr) minmax(90px, 0.55fr);
-  gap: 10px;
-  padding-top: 4px;
+  gap: 8px;
+  padding-top: 3px;
 }
 
 .job-card-facts div {
   min-width: 0;
-  padding: 10px 12px;
+  padding: 8px 12px;
   border-radius: 8px;
   background: #f4efe6;
 }
@@ -815,19 +810,6 @@ h1 {
   color: #6f4e00;
 }
 
-.save-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  border: 1px solid #d8cdbb;
-  border-radius: 8px;
-  background: #fbf7ef;
-  color: #6b6257;
-}
-
-.save-button.saved,
 .secondary-action.saved {
   border-color: #b88424;
   background: #f5dfa9;
@@ -2217,12 +2199,12 @@ h1 {
 
 
   .hero-panel {
-    min-height: 177px;
-    padding: 18px;
+    min-height: 142px;
+    padding: 8px 18px 10px;
   }
 
   .hero-panel .nav-actions {
-    top: 14px;
+    top: 11px;
     right: 14px;
   }
 
@@ -2266,22 +2248,12 @@ h1 {
   .job-card {
     grid-template-columns: 58px minmax(0, 1fr);
     gap: 12px;
-    padding: 15px;
+    padding: 12px 15px;
   }
 
   .company-logo-placeholder {
     width: 58px;
     height: 58px;
-  }
-
-  .job-card-save {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-  }
-
-  .job-card-top {
-    padding-right: 40px;
   }
 
   .job-card-top .source-badge {
@@ -2376,9 +2348,11 @@ h1 {
 
 .dark-mode {
   color: #edf4ee;
-  background:
-    linear-gradient(180deg, rgba(8, 14, 13, 0.92), rgba(15, 30, 27, 0.74) 320px, transparent 321px),
-    #101513;
+  background: #101513;
+}
+
+.dark-mode .top-band {
+  background: linear-gradient(180deg, rgba(8, 14, 13, 0.92), rgba(15, 30, 27, 0.74));
 }
 
 .dark-mode .controls-band,
@@ -2406,7 +2380,6 @@ h1 {
 .dark-mode .search-box,
 .dark-mode .select-control,
 .dark-mode .multi-select-control,
-.dark-mode .save-button,
 .dark-mode .secondary-action {
   border-color: #3a4b44;
   background: #111a17;
@@ -2771,4 +2744,54 @@ h1 {
 
 .dark-mode .placeholder-panel p {
   color: #aab8b1;
+}
+
+.brand-logo {
+  position: absolute;
+  top: 50%;
+  left: 28px;
+  width: clamp(112px, 12vw, 144px);
+  height: clamp(112px, 12vw, 144px);
+  flex: 0 0 auto;
+  object-fit: contain;
+  transform: translateY(-50%);
+}
+
+@media (max-width: 460px) {
+  .brand-lockup {
+    width: 100%;
+    gap: 7px;
+    padding-right: 54px;
+    padding-left: 0;
+  }
+
+
+  .brand-lockup h1 {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: clamp(1.2rem, 5.8vw, 1.85rem);
+    line-height: 1.02;
+    overflow-wrap: normal;
+    word-break: normal;
+  }
+
+  .brand-lockup .alpha-badge {
+    display: none;
+  }
+
+  .brand-logo {
+    position: static;
+    width: 84px;
+    height: 84px;
+    transform: none;
+  }
+
+  .hero-panel .tabs-band {
+    padding-left: 0;
+  }
+
+  .topbar-tabs {
+    min-width: 0;
+    justify-content: center;
+  }
 }

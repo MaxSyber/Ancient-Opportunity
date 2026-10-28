@@ -23,6 +23,7 @@ export default function App() {
   const [jobsError, setJobsError] = useState("");
   const [query, setQuery] = useState("");
   const [datePosted, setDatePosted] = useState("Any date");
+  const [selectedState, setSelectedState] = useState("Any state");
   const [selectedJobTitles, setSelectedJobTitles] = useState([]);
   const [type, setType] = useState("Any type");
   const [darkMode, setDarkMode] = useState(false);
@@ -73,6 +74,15 @@ export default function App() {
     };
   }, []);
 
+  const stateOptions = useMemo(() => [
+    "Any state",
+    ...Array.from(new Set(
+      jobListings
+        .map((job) => job.location.state?.trim())
+        .filter(Boolean),
+    )).sort((stateA, stateB) => stateA.localeCompare(stateB)),
+  ], [jobListings]);
+
   const filteredJobs = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
     return jobListings.filter((job) => {
@@ -88,11 +98,12 @@ export default function App() {
         "Past month": 30 * 24 * 60 * 60 * 1000,
       };
       const matchesDate = datePosted === "Any date" || ageInMs <= dateRanges[datePosted];
+      const matchesState = selectedState === "Any state" || job.location.state?.trim().toLowerCase() === selectedState.toLowerCase();
       const matchesJobTitle = selectedJobTitles.length === 0 || selectedJobTitles.some((jobTitle) => job.jobTitles.includes(jobTitle));
       const matchesType = type === "Any type" || job.employmentType === type;
-      return matchesQuery && matchesDate && matchesJobTitle && matchesType;
+      return matchesQuery && matchesDate && matchesState && matchesJobTitle && matchesType;
     });
-  }, [jobListings, query, datePosted, selectedJobTitles, type]);
+  }, [jobListings, query, datePosted, selectedState, selectedJobTitles, type]);
 
   const selectedJob = filteredJobs.find((job) => job.id === selectedId) || filteredJobs[0] || jobListings[0];
   const toggleSaved = (jobId) => {
@@ -107,6 +118,7 @@ export default function App() {
     setJobListings((current) => [job, ...current]);
     setSelectedId(job.id);
     setDatePosted("Any date");
+    setSelectedState("Any state");
     setSelectedJobTitles([]);
     setType("Any type");
     setQuery("");
@@ -121,7 +133,11 @@ export default function App() {
     <div className={darkMode ? "app-shell dark-mode" : "app-shell"}>
       <header className="top-band">
         <div className="hero-panel">
-          <div className="brand-lockup"><h1>Ancient Opportunity<span className="sr-only"> — Archaeology Jobs and Field Schools</span></h1><span className="alpha-badge">Beta</span></div>
+          <div className="brand-lockup">
+            <img className="brand-logo" src="/Images/AO Primary.png" alt="" aria-hidden="true" />
+            <h1>Ancient Opportunity<span className="sr-only"> — Archaeology Jobs and Field Schools</span></h1>
+            <span className="alpha-badge">Beta</span>
+          </div>
           <div className="nav-actions">
             <button className="icon-button" type="button" aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"} title={darkMode ? "Switch to light mode" : "Switch to dark mode"} aria-pressed={darkMode} onClick={() => setDarkMode((current) => !current)}>
               {darkMode ? <Sun size={20} /> : <Moon size={20} />}
@@ -146,7 +162,7 @@ export default function App() {
       </header>
 
       <main>
-        {activeTab === "Jobs" && <JobsTab filteredJobs={filteredJobs} selectedJob={selectedJob} setSelectedId={setSelectedId} savedIds={savedIds} toggleSaved={toggleSaved} query={query} setQuery={setQuery} datePosted={datePosted} setDatePosted={setDatePosted} selectedJobTitles={selectedJobTitles} setSelectedJobTitles={setSelectedJobTitles} type={type} setType={setType} addJob={addJob} jobsLoading={jobsLoading} jobsError={jobsError} />}
+        {activeTab === "Jobs" && <JobsTab filteredJobs={filteredJobs} selectedJob={selectedJob} setSelectedId={setSelectedId} savedIds={savedIds} toggleSaved={toggleSaved} query={query} setQuery={setQuery} datePosted={datePosted} setDatePosted={setDatePosted} selectedState={selectedState} setSelectedState={setSelectedState} stateOptions={stateOptions} selectedJobTitles={selectedJobTitles} setSelectedJobTitles={setSelectedJobTitles} type={type} setType={setType} addJob={addJob} jobsLoading={jobsLoading} jobsError={jobsError} />}
         {activeTab === "Field Schools" && <FieldSchoolsTab />}
         {activeTab === "Conferences" && <ConferencesTab />}
         {activeTab === "Social Media Influencers" && <InfluencersTab />}

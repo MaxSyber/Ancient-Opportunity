@@ -1,27 +1,5 @@
 export const conferences = [
   {
-    id: "mac-2026",
-    dates: "October 8–10, 2026",
-    name: "Midwest Archaeological Conference",
-    abbreviation: "MAC",
-    website: "https://www.midwestarchaeology.org/",
-    websiteLabel: "midwestarchaeology.org",
-    location: "Mankato, Minnesota",
-    description:
-      "Archaeology of the Midwest, including prehistoric, historical, Indigenous and CRM research.",
-  },
-  {
-    id: "plains-anthropological-conference-2026",
-    dates: "October 21–24, 2026",
-    name: "Plains Anthropological Conference",
-    abbreviation: null,
-    website: "https://plainsanthropologicalsociety.org/",
-    websiteLabel: "plainsanthropologicalsociety.org",
-    location: "Lincoln, Nebraska",
-    description:
-      "Archaeology and anthropology of the Great Plains; particularly useful for Plains archaeology and CRM professionals.",
-  },
-  {
     id: "seac-2026",
     dates: "November 11–14, 2026",
     name: "Southeastern Archaeological Conference",
